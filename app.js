@@ -470,4 +470,4 @@ behavior:"smooth"
 }
 
 loadDashboard();
-setInterval(loadDashboard,30000);
+setInterval(loadDashboard,300000);
