@@ -219,13 +219,13 @@ let csv =
 latestData.forEach(f=>{
 
 csv += [
-f.track_id || "",
-f.callsign || "",
-f.vid || "",
-f.dep || "",
-f.arr || "",
-f.aircraft || "",
-cleanCSV(f.status || ""),
+cleanCSV(f.track_id || ""),
+cleanCSV(f.callsign || ""),
+cleanCSV(f.vid || ""),
+cleanCSV(f.dep || ""),
+cleanCSV(f.arr || ""),
+cleanCSV(f.aircraft || ""),
+cleanCSV(getStatusText(f)),
 cleanCSV(f.time || "")
 ].join(",") + "\n";
 
@@ -241,14 +241,14 @@ const a = document.createElement("a");
 a.href = url;
 
 const now = new Date();
-const fileName =
+
+a.download =
 `ivao-search-${now.getUTCFullYear()}-${
 String(now.getUTCMonth()+1).padStart(2,"0")
 }-${
 String(now.getUTCDate()).padStart(2,"0")
 }.csv`;
 
-a.download = fileName;
 a.click();
 
 URL.revokeObjectURL(url);
@@ -257,6 +257,33 @@ URL.revokeObjectURL(url);
 
 function cleanCSV(value){
 return `"${String(value).replace(/"/g,'""')}"`;
+}
+
+function getStatusText(f){
+
+const status = (f.status || "").toLowerCase();
+
+if(f.landed_at){
+return "Landed";
+}
+
+if(status === "offline"){
+return "Missing";
+}
+
+const state = (f.last_state || "").toLowerCase();
+
+if(state.includes("route")) return "Enroute";
+if(state.includes("approach")) return "Approach";
+if(state.includes("boarding")) return "Boarding";
+if(state.includes("taxi")) return "Taxiing";
+if(state.includes("push")) return "Pushback";
+if(state.includes("block")) return "On Blocks";
+
+if(f.last_state) return f.last_state;
+
+return "Online";
+
 }
 
 function renderStatus(f){
