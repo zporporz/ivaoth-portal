@@ -232,7 +232,42 @@ input[type="date"],
 input[type="time"]{
   color:#cbd5e1;
 }
+.top-row{
+  margin-bottom:14px;
+}
 
+.search-row{
+  display:flex;
+  justify-content:center;
+  gap:12px;
+  flex-wrap:wrap;
+  margin-top:10px;
+}
+
+.search-row input{
+  width:220px;
+  padding:18px;
+  border:none;
+  border-radius:14px;
+  background:rgba(255,255,255,.08);
+  color:#fff;
+  font-size:16px;
+}
+
+.search-row button{
+  padding:18px 34px;
+  border:none;
+  border-radius:16px;
+  background:#3b82f6;
+  color:#fff;
+  font-size:17px;
+  font-weight:700;
+  cursor:pointer;
+}
+
+.search-row button:hover{
+  background:#2563eb;
+}
 </style>
 </head>
 
@@ -261,12 +296,20 @@ input[type="time"]{
     Search real IVAO Thailand traffic history instantly.
   </p>
 
-<div class="search-row">
+<div class="search-row top-row">
   <input id="dep" placeholder="Departure ICAO">
   <input id="arr" placeholder="Arrival ICAO">
-  <input id="date" type="date">
-  <input id="time" type="time">
-  <button onclick="searchFlights()">Search</button>
+</div>
+
+<div class="search-row">
+  <input id="fromDate" type="date">
+  <input id="fromTime" type="time">
+  <input id="toDate" type="date">
+  <input id="toTime" type="time">
+</div>
+
+<div class="search-row">
+  <button onclick="searchFlights()">Search Flights</button>
 </div>
 
   <div id="results"></div>
@@ -286,14 +329,18 @@ async function searchFlights() {
   try {
     results.innerHTML = "Loading...";
 
-    const dep  = document.getElementById("dep").value.trim().toUpperCase();
-    const arr  = document.getElementById("arr").value.trim().toUpperCase();
-    const date = document.getElementById("date").value;
-    const time = document.getElementById("time").value;
+    const dep = document.getElementById("dep").value.trim().toUpperCase();
+    const arr = document.getElementById("arr").value.trim().toUpperCase();
 
-    if (!dep || !arr || !date || !time) {
+    const fromDate = document.getElementById("fromDate").value;
+    const fromTime = document.getElementById("fromTime").value;
+
+    const toDate = document.getElementById("toDate").value;
+    const toTime = document.getElementById("toTime").value;
+
+    if (!dep || !arr || !fromDate || !fromTime || !toDate || !toTime) {
       results.innerHTML =
-        '<div class="alert-error">Please complete Departure, Arrival, Date and Time.</div>';
+        '<div class="alert-error">Please complete all search fields.</div>';
       return;
     }
 
