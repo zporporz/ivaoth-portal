@@ -448,17 +448,16 @@ Ecgkasit B. 739898
 
   <div class="option-group">
 
-    <label class="option-item">
-      All Airport Traffic
-      <input type="checkbox" id="modeSwitch" checked onchange="toggleMode()">
+    <label class="option-item" id="bidiWrap">
+    <input type="checkbox" id="bidirectional" checked>
+    Bidirectional Search
     </label>
 
-  </div>
+    <label class="option-item">
+    Specific Routes
+    <input type="checkbox" id="modeSwitch" onchange="toggleMode()">
+    </label>
 
-  <div class="action-group">
-    <button class="btn-main" onclick="searchFlights()">SEARCH FLIGHTS</button>
-    <button class="btn-green" onclick="exportCSV()">EXPORT CSV</button>
-    <button class="btn-ghost" onclick="resetForm()">RESET</button>
   </div>
 
 </div>
@@ -499,16 +498,22 @@ function toggleMode(){
 
 const on = document.getElementById("modeSwitch").checked;
 
+// ON = Airport ICAOs
 if(on){
-  // airport mode
-  document.getElementById("airportMode").style.display = "block";
-  document.getElementById("routeDep").style.display = "none";
-  document.getElementById("routeArr").style.display = "none";
+
+document.getElementById("airportMode").style.display = "block";
+document.getElementById("routeDep").style.display = "none";
+document.getElementById("routeArr").style.display = "none";
+document.getElementById("bidiWrap").style.display = "none";
+
 }else{
-  // route mode
-  document.getElementById("airportMode").style.display = "none";
-  document.getElementById("routeDep").style.display = "block";
-  document.getElementById("routeArr").style.display = "block";
+
+// OFF = Departure / Arrival
+document.getElementById("airportMode").style.display = "none";
+document.getElementById("routeDep").style.display = "block";
+document.getElementById("routeArr").style.display = "block";
+document.getElementById("bidiWrap").style.display = "flex";
+
 }
 
 }
