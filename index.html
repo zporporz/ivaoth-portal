@@ -311,7 +311,7 @@ async function searchFlights(){
         <th>VID</th>
         <th>DEP</th>
         <th>ARR</th>
-        <th>Time</th>
+        <th>Track</th>
       </tr>
     `;
 
@@ -323,7 +323,14 @@ async function searchFlights(){
         <td>${f.vid || "-"}</td>
         <td>${f.dep || "-"}</td>
         <td>${f.arr || "-"}</td>
-        <td>${f.time || "-"}</td>
+        <td>
+          <a href="https://tracker.ivao.aero/sessions/${f.track_id}"
+          target="_blank"
+          rel="noopener noreferrer"
+          style="color:#60a5fa;font-weight:700;text-decoration:none;">
+          ${f.track_id || "-"}
+          </a>
+        </td>
       </tr>
       `;
     });
