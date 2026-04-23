@@ -400,61 +400,66 @@ Ecgkasit B. 739898
 
 <div class="panel">
 
-<div class="search-grid">
-<div>
-<label>Departure ICAO</label>
-<input id="dep" placeholder="VTBD">
-</div>
+<div class="search-grid" id="searchArea">
 
-<div>
-<label>Arrival ICAO</label>
-<input id="arr" placeholder="VTSM">
-</div>
+  <!-- MODE A : All Airport Traffic -->
+  <div id="airportMode" style="grid-column:span 2;">
 
-<div>
-<label>From Date</label>
-<input id="fromDate" type="date">
-</div>
+    <label>Airport ICAOs</label>
+    <input id="airportCodes" placeholder="VTBD, VTSM, VTSP">
 
-<div>
-<label>From Time (UTC)</label>
-<input id="fromTime" type="time">
-</div>
+  </div>
 
-<div>
-<label>To Date</label>
-<input id="toDate" type="date">
-</div>
+  <!-- MODE B : Specific Routes -->
+  <div id="routeDep" style="display:none;">
+    <label>Departure ICAO</label>
+    <input id="dep" placeholder="VTBD">
+  </div>
 
-<div>
-<label>To Time (UTC)</label>
-<input id="toTime" type="time">
-</div>
+  <div id="routeArr" style="display:none;">
+    <label>Arrival ICAO</label>
+    <input id="arr" placeholder="VTSM">
+  </div>
+
+  <!-- COMMON -->
+  <div>
+    <label>From Date</label>
+    <input id="fromDate" type="date">
+  </div>
+
+  <div>
+    <label>From Time (UTC)</label>
+    <input id="fromTime" type="time">
+  </div>
+
+  <div>
+    <label>To Date</label>
+    <input id="toDate" type="date">
+  </div>
+
+  <div>
+    <label>To Time (UTC)</label>
+    <input id="toTime" type="time">
+  </div>
+
 </div>
 
 <div class="search-options">
 
-<div class="option-group">
+  <div class="option-group">
 
-<label class="option-item">
-<input type="checkbox" id="bidirectional" checked>
-Bidirectional
-</label>
+    <label class="option-item">
+      All Airport Traffic
+      <input type="checkbox" id="modeSwitch" checked onchange="toggleMode()">
+    </label>
 
-<label class="option-item">
-<input type="checkbox" id="specificRoutes">
-Specific Routes
-</label>
+  </div>
 
-</div>
-
-<div class="action-group">
-<button class="btn-main" onclick="searchFlights()">SEARCH</button>
-<button class="btn-green" onclick="exportCSV()">EXPORT CSV</button>
-<button class="btn-ghost" onclick="resetForm()">RESET</button>
-</div>
-
-</div>
+  <div class="action-group">
+    <button class="btn-main" onclick="searchFlights()">SEARCH FLIGHTS</button>
+    <button class="btn-green" onclick="exportCSV()">EXPORT CSV</button>
+    <button class="btn-ghost" onclick="resetForm()">RESET</button>
+  </div>
 
 </div>
 
@@ -489,7 +494,25 @@ Specific Routes
 </div>
 
 <script>
-let latestData = [];  
+let latestData = [];
+function toggleMode(){
+
+const on = document.getElementById("modeSwitch").checked;
+
+if(on){
+  // airport mode
+  document.getElementById("airportMode").style.display = "block";
+  document.getElementById("routeDep").style.display = "none";
+  document.getElementById("routeArr").style.display = "none";
+}else{
+  // route mode
+  document.getElementById("airportMode").style.display = "none";
+  document.getElementById("routeDep").style.display = "block";
+  document.getElementById("routeArr").style.display = "block";
+}
+
+}
+
 function resetForm(){
 ["dep","arr","fromDate","fromTime","toDate","toTime"].forEach(id=>{
 document.getElementById(id).value="";
@@ -499,45 +522,119 @@ document.getElementById("results").innerHTML="";
 
 async function searchFlights(){
 
-const results=document.getElementById("results");
+const results = document.getElementById("results");
 
-const dep=document.getElementById("dep").value.trim().toUpperCase();
-const arr=document.getElementById("arr").value.trim().toUpperCase();
-const fromDate=document.getElementById("fromDate").value;
-const fromTime=document.getElementById("fromTime").value;
-const toDate=document.getElementById("toDate").value;
-const toTime=document.getElementById("toTime").value;
+const modeOn = document.getElementById("modeSwitch").checked;
 
-if((!dep&&!arr)||!fromDate||!fromTime||!toDate||!toTime){
-results.innerHTML=`<div class="msg error">Fill Departure or Arrival, and complete date/time.</div>`;
+const airportCodes =
+(document.getElementById("airportCodes")?.value || "")
+.trim().toUpperCase();
+
+const dep =
+(document.getElementById("dep")?.value || "")
+.trim().toUpperCase();
+
+const arr =
+(document.getElementById("arr")?.value || "")
+.trim().toUpperCase();
+
+const fromDate = document.getElementById("fromDate").value;
+const fromTime = document.getElementById("fromTime").value;
+const toDate   = document.getElementById("toDate").value;
+const toTime   = document.getElementById("toTime").value;
+
+if(!fromDate || !fromTime || !toDate || !toTime){
+results.innerHTML =
+`<div class="msg error">Complete date/time first.</div>`;
 return;
 }
 
-results.innerHTML=`<div class="msg info">Scanning traffic database...</div>`;
+results.innerHTML =
+`<div class="msg info">Scanning traffic database...</div>`;
 
 try{
 
-const from=fromDate+" "+fromTime+":00";
-const to=toDate+" "+toTime+":59";
+const from = fromDate + " " + fromTime + ":00";
+const to   = toDate + " " + toTime + ":59";
 
-const res=await fetch(
-`https://ivaoth-bot.fly.dev/api/search?dep=${dep}&arr=${arr}&from=${encodeURIComponent(from)}&to=${encodeURIComponent(to)}`
-);
+let allData = [];
 
-const data=await res.json();
-latestData = data;
+/* ===========================
+MODE 1 : All Airport Traffic
+=========================== */
+if(modeOn){
 
-if(data.length===0){
-results.innerHTML=`<div class="msg error">No flights detected.</div>`;
+if(!airportCodes){
+results.innerHTML =
+`<div class="msg error">Enter airport ICAOs.</div>`;
 return;
 }
 
-document.getElementById("statFlights").innerText=data.length;
-document.getElementById("statPilots").innerText=new Set(data.map(x=>x.vid)).size;
-document.getElementById("statDep").innerText=data[0].dep||"-";
-document.getElementById("statArr").innerText=data[0].arr||"-";
+const airports = airportCodes.split(",").map(x => x.trim());
 
-let html=`
+for(const code of airports){
+
+const res1 = await fetch(
+`https://ivaoth-bot.fly.dev/api/search?dep=${code}&from=${encodeURIComponent(from)}&to=${encodeURIComponent(to)}`
+);
+
+const data1 = await res1.json();
+
+const res2 = await fetch(
+`https://ivaoth-bot.fly.dev/api/search?arr=${code}&from=${encodeURIComponent(from)}&to=${encodeURIComponent(to)}`
+);
+
+const data2 = await res2.json();
+
+allData = allData.concat(data1, data2);
+}
+
+}
+
+/* ===========================
+MODE 2 : Specific Routes
+=========================== */
+else{
+
+if(!dep && !arr){
+results.innerHTML =
+`<div class="msg error">Enter departure or arrival.</div>`;
+return;
+}
+
+const res = await fetch(
+`https://ivaoth-bot.fly.dev/api/search?dep=${dep}&arr=${arr}&from=${encodeURIComponent(from)}&to=${encodeURIComponent(to)}`
+);
+
+allData = await res.json();
+}
+
+/* remove duplicates */
+const map = new Map();
+allData.forEach(x => map.set(x.track_id, x));
+allData = [...map.values()];
+
+latestData = allData;
+
+if(allData.length === 0){
+results.innerHTML =
+`<div class="msg error">No flights detected.</div>`;
+return;
+}
+
+/* stats */
+document.getElementById("statFlights").innerText = allData.length;
+document.getElementById("statPilots").innerText =
+new Set(allData.map(x=>x.vid)).size;
+
+document.getElementById("statDep").innerText =
+allData[0].dep || "-";
+
+document.getElementById("statArr").innerText =
+allData[0].arr || "-";
+
+/* table */
+let html = `
 <table>
 <tr>
 <th>Callsign</th>
@@ -548,8 +645,9 @@ let html=`
 </tr>
 `;
 
-data.forEach(f=>{
-html+=`
+allData.forEach(f => {
+
+html += `
 <tr>
 <td>${f.callsign}</td>
 <td>${f.aircraft}</td>
@@ -565,13 +663,16 @@ rel="noopener noreferrer">
 </td>
 </tr>
 `;
+
 });
 
-html+=`</table>`;
-results.innerHTML=html;
+html += `</table>`;
+results.innerHTML = html;
 
 }catch(err){
-results.innerHTML=`<div class="msg error">API connection failed.</div>`;
+
+results.innerHTML =
+`<div class="msg error">API connection failed.</div>`;
 }
 }
 function exportCSV(){
