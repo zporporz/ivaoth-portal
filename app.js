@@ -449,3 +449,20 @@ console.log(err);
 }
 
 loadDashboard();
+
+window.addEventListener("scroll", () => {
+const btn = document.getElementById("topBtn");
+
+if(window.scrollY > 400){
+btn.classList.add("show");
+}else{
+btn.classList.remove("show");
+}
+});
+
+function scrollToTop(){
+window.scrollTo({
+top:0,
+behavior:"smooth"
+});
+}
