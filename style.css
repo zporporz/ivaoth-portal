@@ -357,3 +357,30 @@ grid-template-columns:repeat(2,1fr);
 #statsSection canvas{
 max-height:320px;
 }
+
+#topBtn{
+position:fixed;
+right:22px;
+bottom:22px;
+width:52px;
+height:52px;
+border:none;
+border-radius:50%;
+background:linear-gradient(135deg,#2f7cff,#5aa2ff);
+color:#fff;
+font-size:24px;
+font-weight:800;
+cursor:pointer;
+box-shadow:0 10px 25px rgba(0,0,0,.35);
+display:none;
+z-index:999;
+transition:.25s;
+}
+
+#topBtn:hover{
+transform:translateY(-3px);
+}
+
+#topBtn.show{
+display:block;
+}
