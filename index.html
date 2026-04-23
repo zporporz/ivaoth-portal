@@ -106,7 +106,8 @@ margin-top:6px;
 }
 
 .panel{
-margin-top:22px;
+max-width:1380px;
+margin:22px auto 0;
 background:linear-gradient(180deg,var(--panel),var(--panel2));
 border:1px solid var(--line);
 border-radius:22px;
@@ -115,8 +116,14 @@ padding:22px;
 
 .search-grid{
 display:grid;
-grid-template-columns:repeat(6,1fr);
+grid-template-columns:
+1fr 1fr 1fr .9fr 1fr .9fr;
 gap:14px;
+align-items:end;
+}
+
+#airportWrap{
+grid-column:span 2;
 }
 
 label{
@@ -134,6 +141,11 @@ border:1px solid #1b3557;
 background:#081423;
 color:#fff;
 font-size:18px;
+outline:none;
+}
+
+input:focus{
+border-color:#2f7cff;
 }
 
 .search-options{
@@ -149,7 +161,7 @@ flex-wrap:wrap;
 
 .option-group{
 display:flex;
-gap:26px;
+gap:28px;
 align-items:center;
 flex-wrap:wrap;
 }
@@ -158,6 +170,7 @@ flex-wrap:wrap;
 display:flex;
 align-items:center;
 gap:10px;
+min-height:28px;
 font-size:14px;
 font-weight:600;
 }
@@ -226,6 +239,11 @@ border-radius:14px;
 padding:14px 22px;
 font-weight:800;
 color:#fff;
+transition:.2s;
+}
+
+button:hover{
+transform:translateY(-1px);
 }
 
 .btn-main{
@@ -255,8 +273,14 @@ background:#0f223c;
 border:1px solid var(--line);
 }
 
-.stat small{color:var(--muted);}
-.stat h2{margin-top:8px;font-size:32px;}
+.stat small{
+color:var(--muted);
+}
+
+.stat h2{
+margin-top:8px;
+font-size:32px;
+}
 
 #results{
 margin-top:18px;
@@ -279,6 +303,10 @@ th{
 color:#8fb6ff;
 }
 
+tr:hover{
+background:rgba(255,255,255,.02);
+}
+
 .track{
 color:#72b2ff;
 text-decoration:none;
@@ -292,16 +320,37 @@ background:rgba(255,93,108,.08);
 border:1px solid rgba(255,93,108,.18);
 }
 
+.hint{
+display:block;
+margin-top:8px;
+font-size:12px;
+color:#7e95b8;
+line-height:1.4;
+font-weight:500;
+}
+
 @media(max-width:1200px){
 .search-grid,.stats{
 grid-template-columns:repeat(2,1fr);
 }
+#airportWrap{
+grid-column:span 2;
+}
 }
 
 @media(max-width:900px){
-.app{grid-template-columns:1fr;}
-.sidebar{display:none;}
-.search-grid,.stats{grid-template-columns:1fr;}
+.app{
+grid-template-columns:1fr;
+}
+.sidebar{
+display:none;
+}
+.search-grid,.stats{
+grid-template-columns:1fr;
+}
+#airportWrap{
+grid-column:span 1;
+}
 }
 </style>
 </head>
@@ -313,7 +362,7 @@ grid-template-columns:repeat(2,1fr);
 <aside class="sidebar">
 
 <div class="brand">
-<img src="logo.png">
+<img src="logo.png" alt="IVAO TH">
 </div>
 
 <div class="nav">
@@ -346,36 +395,43 @@ Ecgkasit B. 739898
 <div id="airportWrap" style="display:none;">
 <label>Airport ICAOs</label>
 <input id="airportCodes" placeholder="VTBD, VTSM">
+<small class="hint">Separate multiple airports with commas</small>
 </div>
 
 <div id="depWrap">
 <label>Departure ICAOs</label>
 <input id="dep" placeholder="VTBD">
+<small class="hint">Single ICAO code</small>
 </div>
 
 <div id="arrWrap">
 <label>Arrival ICAOs</label>
 <input id="arr" placeholder="VTSM">
+<small class="hint">Single ICAO code</small>
 </div>
 
 <div>
 <label>From Date</label>
 <input id="fromDate" type="date">
+<small class="hint">UTC date</small>
 </div>
 
 <div>
 <label>From Time</label>
 <input id="fromTime" type="time">
+<small class="hint">UTC time</small>
 </div>
 
 <div>
 <label>To Date</label>
 <input id="toDate" type="date">
+<small class="hint">UTC date</small>
 </div>
 
 <div>
 <label>To Time</label>
 <input id="toTime" type="time">
+<small class="hint">UTC time</small>
 </div>
 
 </div>
@@ -396,6 +452,7 @@ Specific Routes
 <input type="checkbox" id="modeSwitch" onchange="toggleMode()">
 <span class="slider"></span>
 </label>
+
 </div>
 
 </div>
@@ -411,10 +468,25 @@ Specific Routes
 </div>
 
 <div class="stats">
-<div class="stat"><small>Flights Found</small><h2 id="statFlights">0</h2></div>
-<div class="stat"><small>Unique Pilots</small><h2 id="statPilots">0</h2></div>
-<div class="stat"><small>Main Departure</small><h2 id="statDep">-</h2></div>
-<div class="stat"><small>Main Arrival</small><h2 id="statArr">-</h2></div>
+<div class="stat">
+<small>Flights Found</small>
+<h2 id="statFlights">0</h2>
+</div>
+
+<div class="stat">
+<small>Unique Pilots</small>
+<h2 id="statPilots">0</h2>
+</div>
+
+<div class="stat">
+<small>Main Departure</small>
+<h2 id="statDep">-</h2>
+</div>
+
+<div class="stat">
+<small>Main Arrival</small>
+<h2 id="statArr">-</h2>
+</div>
 </div>
 
 <div class="panel">
@@ -433,17 +505,17 @@ function toggleMode(){
 const on = document.getElementById("modeSwitch").checked;
 
 if(on){
-// ON = Airport ICAOs
-document.getElementById("airportWrap").style.display="block";
-document.getElementById("depWrap").style.display="none";
-document.getElementById("arrWrap").style.display="none";
-document.getElementById("bidiWrap").style.display="none";
+// Airport mode
+document.getElementById("airportWrap").style.display = "block";
+document.getElementById("depWrap").style.display = "none";
+document.getElementById("arrWrap").style.display = "none";
+document.getElementById("bidiWrap").style.display = "none";
 }else{
-// OFF = dep/arr
-document.getElementById("airportWrap").style.display="none";
-document.getElementById("depWrap").style.display="block";
-document.getElementById("arrWrap").style.display="block";
-document.getElementById("bidiWrap").style.display="flex";
+// Route mode
+document.getElementById("airportWrap").style.display = "none";
+document.getElementById("depWrap").style.display = "block";
+document.getElementById("arrWrap").style.display = "block";
+document.getElementById("bidiWrap").style.display = "flex";
 }
 
 }
@@ -451,135 +523,201 @@ document.getElementById("bidiWrap").style.display="flex";
 toggleMode();
 
 function resetForm(){
-["airportCodes","dep","arr","fromDate","fromTime","toDate","toTime"].forEach(id=>{
-const el=document.getElementById(id);
-if(el) el.value="";
+
+[
+"airportCodes",
+"dep",
+"arr",
+"fromDate",
+"fromTime",
+"toDate",
+"toTime"
+].forEach(id=>{
+const el = document.getElementById(id);
+if(el) el.value = "";
 });
-document.getElementById("results").innerHTML="";
-latestData=[];
+
+document.getElementById("results").innerHTML = "";
+latestData = [];
+
+document.getElementById("statFlights").innerText = "0";
+document.getElementById("statPilots").innerText = "0";
+document.getElementById("statDep").innerText = "-";
+document.getElementById("statArr").innerText = "-";
 }
 
 async function searchFlights(){
 
 const results = document.getElementById("results");
-results.innerHTML = "Searching...";
+
+results.innerHTML =
+'<div class="msg">Searching database...</div>';
 
 const modeOn = document.getElementById("modeSwitch").checked;
 
-const fromDate=document.getElementById("fromDate").value;
-const fromTime=document.getElementById("fromTime").value;
-const toDate=document.getElementById("toDate").value;
-const toTime=document.getElementById("toTime").value;
+const fromDate = document.getElementById("fromDate").value;
+const fromTime = document.getElementById("fromTime").value;
+const toDate   = document.getElementById("toDate").value;
+const toTime   = document.getElementById("toTime").value;
 
-if(!fromDate||!fromTime||!toDate||!toTime){
-results.innerHTML='<div class="msg">Complete date/time first.</div>';
+if(!fromDate || !fromTime || !toDate || !toTime){
+results.innerHTML =
+'<div class="msg">Complete date/time first.</div>';
 return;
 }
 
-const from = fromDate+" "+fromTime+":00";
-const to   = toDate+" "+toTime+":59";
+const from = fromDate + " " + fromTime + ":00";
+const to   = toDate + " " + toTime + ":59";
 
-let allData=[];
+let allData = [];
 
 try{
 
 if(modeOn){
 
-const airports=document.getElementById("airportCodes").value
-.toUpperCase().split(",").map(x=>x.trim()).filter(Boolean);
+const airports = document.getElementById("airportCodes").value
+.toUpperCase()
+.split(",")
+.map(x => x.trim())
+.filter(Boolean);
+
+if(airports.length === 0){
+results.innerHTML =
+'<div class="msg">Enter airport ICAOs.</div>';
+return;
+}
 
 for(const code of airports){
 
-let r1=await fetch(`https://ivaoth-bot.fly.dev/api/search?dep=${code}&from=${encodeURIComponent(from)}&to=${encodeURIComponent(to)}`);
-let d1=await r1.json();
+const r1 = await fetch(
+`https://ivaoth-bot.fly.dev/api/search?dep=${code}&from=${encodeURIComponent(from)}&to=${encodeURIComponent(to)}`
+);
+const d1 = await r1.json();
 
-let r2=await fetch(`https://ivaoth-bot.fly.dev/api/search?arr=${code}&from=${encodeURIComponent(from)}&to=${encodeURIComponent(to)}`);
-let d2=await r2.json();
+const r2 = await fetch(
+`https://ivaoth-bot.fly.dev/api/search?arr=${code}&from=${encodeURIComponent(from)}&to=${encodeURIComponent(to)}`
+);
+const d2 = await r2.json();
 
-allData=allData.concat(d1,d2);
+allData = allData.concat(d1,d2);
 }
 
 }else{
 
-const dep=document.getElementById("dep").value.toUpperCase();
-const arr=document.getElementById("arr").value.toUpperCase();
+const dep = document.getElementById("dep").value.trim().toUpperCase();
+const arr = document.getElementById("arr").value.trim().toUpperCase();
 
-let r=await fetch(`https://ivaoth-bot.fly.dev/api/search?dep=${dep}&arr=${arr}&from=${encodeURIComponent(from)}&to=${encodeURIComponent(to)}`);
-allData=await r.json();
-
-if(document.getElementById("bidirectional").checked && dep && arr){
-
-let r2=await fetch(`https://ivaoth-bot.fly.dev/api/search?dep=${arr}&arr=${dep}&from=${encodeURIComponent(from)}&to=${encodeURIComponent(to)}`);
-let d2=await r2.json();
-
-allData=allData.concat(d2);
-}
-
-}
-
-const map=new Map();
-allData.forEach(x=>map.set(x.track_id,x));
-allData=[...map.values()];
-
-latestData=allData;
-
-document.getElementById("statFlights").innerText=allData.length;
-document.getElementById("statPilots").innerText=new Set(allData.map(x=>x.vid)).size;
-document.getElementById("statDep").innerText=allData[0]?.dep || "-";
-document.getElementById("statArr").innerText=allData[0]?.arr || "-";
-
-if(allData.length===0){
-results.innerHTML='<div class="msg">No flights detected.</div>';
+if(!dep && !arr){
+results.innerHTML =
+'<div class="msg">Enter departure or arrival ICAO.</div>';
 return;
 }
 
-let html=`<table>
+const r = await fetch(
+`https://ivaoth-bot.fly.dev/api/search?dep=${dep}&arr=${arr}&from=${encodeURIComponent(from)}&to=${encodeURIComponent(to)}`
+);
+
+allData = await r.json();
+
+if(document.getElementById("bidirectional").checked && dep && arr){
+
+const r2 = await fetch(
+`https://ivaoth-bot.fly.dev/api/search?dep=${arr}&arr=${dep}&from=${encodeURIComponent(from)}&to=${encodeURIComponent(to)}`
+);
+
+const d2 = await r2.json();
+
+allData = allData.concat(d2);
+}
+
+}
+
+/* remove duplicates */
+const map = new Map();
+allData.forEach(x => map.set(x.track_id, x));
+allData = [...map.values()];
+
+latestData = allData;
+
+document.getElementById("statFlights").innerText = allData.length;
+document.getElementById("statPilots").innerText =
+new Set(allData.map(x=>x.vid)).size;
+
+document.getElementById("statDep").innerText =
+allData[0]?.dep || "-";
+
+document.getElementById("statArr").innerText =
+allData[0]?.arr || "-";
+
+if(allData.length === 0){
+results.innerHTML =
+'<div class="msg">No flights detected.</div>';
+return;
+}
+
+let html = `
+<table>
 <tr>
 <th>Callsign</th>
 <th>Aircraft</th>
 <th>VID</th>
 <th>Route</th>
 <th>Track</th>
-</tr>`;
+</tr>
+`;
 
 allData.forEach(f=>{
-html+=`
+
+html += `
 <tr>
 <td>${f.callsign}</td>
 <td>${f.aircraft}</td>
 <td>${f.vid}</td>
 <td>${f.dep} → ${f.arr}</td>
-<td><a class="track" href="https://tracker.ivao.aero/sessions/${f.track_id}" target="_blank">#${f.track_id}</a></td>
-</tr>`;
+<td>
+<a class="track"
+href="https://tracker.ivao.aero/sessions/${f.track_id}"
+target="_blank">
+#${f.track_id}
+</a>
+</td>
+</tr>
+`;
+
 });
 
-html+=`</table>`;
-results.innerHTML=html;
+html += `</table>`;
+
+results.innerHTML = html;
 
 }catch(e){
-results.innerHTML='<div class="msg">API connection failed.</div>';
+
+results.innerHTML =
+'<div class="msg">API connection failed.</div>';
+
 }
+
 }
 
 function exportCSV(){
 
-if(latestData.length===0){
+if(latestData.length === 0){
 alert("No data to export.");
 return;
 }
 
-let csv="Callsign,Aircraft,VID,DEP,ARR,Track ID\n";
+let csv = "Callsign,Aircraft,VID,DEP,ARR,Track ID\n";
 
 latestData.forEach(f=>{
-csv+=`${f.callsign},${f.aircraft},${f.vid},${f.dep},${f.arr},${f.track_id}\n`;
+csv += `${f.callsign},${f.aircraft},${f.vid},${f.dep},${f.arr},${f.track_id}\n`;
 });
 
-const blob=new Blob([csv],{type:"text/csv"});
-const url=URL.createObjectURL(blob);
+const blob = new Blob([csv], {type:"text/csv"});
+const url = URL.createObjectURL(blob);
 
-const a=document.createElement("a");
-a.href=url;
-a.download="ivao-search.csv";
+const a = document.createElement("a");
+a.href = url;
+a.download = "ivao-search.csv";
 a.click();
 
 URL.revokeObjectURL(url);
