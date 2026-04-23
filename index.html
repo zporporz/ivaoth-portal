@@ -353,6 +353,39 @@ grid-template-columns:1fr;
 grid-column:span 1;
 }
 }
+
+.badge{
+padding:6px 10px;
+border-radius:999px;
+font-size:12px;
+font-weight:700;
+display:inline-block;
+}
+
+.green{
+background:rgba(25,195,125,.15);
+color:#38d98f;
+}
+
+.yellow{
+background:rgba(255,190,0,.15);
+color:#ffcb47;
+}
+
+.red{
+background:rgba(255,93,108,.15);
+color:#ff7b87;
+}
+
+.blue{
+background:rgba(47,124,255,.15);
+color:#6ea8ff;
+}
+
+.gray{
+background:rgba(255,255,255,.08);
+color:#c8d3e4;
+}
 </style>
 </head>
 
@@ -557,7 +590,6 @@ document.getElementById("statArr").innerText = "-";
 async function searchFlights(){
 
 const results = document.getElementById("results");
-document.getElementById("resultSection").style.display = "block";
 
 results.innerHTML =
 '<div class="msg">Searching database...</div>';
@@ -574,6 +606,8 @@ results.innerHTML =
 '<div class="msg">Complete date/time first.</div>';
 return;
 }
+
+document.getElementById("resultSection").style.display = "block";
 
 const from = fromDate + " " + fromTime + ":00";
 const to   = toDate + " " + toTime + ":59";
@@ -671,6 +705,7 @@ let html = `
 <th>Aircraft</th>
 <th>VID</th>
 <th>Route</th>
+<th>Status</th>
 <th>Track</th>
 </tr>
 `;
@@ -683,6 +718,7 @@ html += `
 <td>${f.aircraft}</td>
 <td>${f.vid}</td>
 <td>${f.dep} → ${f.arr}</td>
+<td>${renderStatus(f.status)}</td>
 <td>
 <a class="track"
 href="https://tracker.ivao.aero/sessions/${f.track_id}"
@@ -715,10 +751,10 @@ alert("No data to export.");
 return;
 }
 
-let csv = "Callsign,Aircraft,VID,DEP,ARR,Track ID\n";
+let csv = "Callsign,Aircraft,VID,DEP,ARR,Status,Track ID\n";
 
 latestData.forEach(f=>{
-csv += `${f.callsign},${f.aircraft},${f.vid},${f.dep},${f.arr},${f.track_id}\n`;
+csv += `${f.callsign},${f.aircraft},${f.vid},${f.dep},${f.arr},${f.status},${f.track_id}\n`;
 });
 
 const blob = new Blob([csv], {type:"text/csv"});
@@ -730,6 +766,25 @@ a.download = "ivao-search.csv";
 a.click();
 
 URL.revokeObjectURL(url);
+}
+
+function renderStatus(status){
+
+status = (status || "").toLowerCase();
+
+if(status.includes("land"))
+return '<span class="badge green">Landed</span>';
+
+if(status.includes("route"))
+return '<span class="badge yellow">Enroute</span>';
+
+if(status.includes("miss"))
+return '<span class="badge red">Missing</span>';
+
+if(status.includes("connect"))
+return '<span class="badge blue">Connected</span>';
+
+return '<span class="badge gray">Unknown</span>';
 }
 </script>
 
