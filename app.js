@@ -345,3 +345,61 @@ block:"start"
 }
 
 }
+
+async function loadDashboard(){
+
+try{
+
+const res = await fetch(
+"https://ivaoth-bot.fly.dev/api/dashboard"
+);
+
+const data = await res.json();
+
+document.getElementById("dPilots").innerText =
+data.pilots_online;
+
+document.getElementById("dAtc").innerText =
+data.atc_online;
+
+document.getElementById("dLanded").innerText =
+data.landed;
+
+document.getElementById("dMissing").innerText =
+data.missing;
+
+/* top departures */
+let depHtml = "";
+
+data.top_departures.forEach(x=>{
+depHtml += `
+<div class="rank-row">
+<span>${x.icao}</span>
+<b>${x.count}</b>
+</div>
+`;
+});
+
+document.getElementById("topDeps").innerHTML = depHtml;
+
+/* top arrivals */
+let arrHtml = "";
+
+data.top_arrivals.forEach(x=>{
+arrHtml += `
+<div class="rank-row">
+<span>${x.icao}</span>
+<b>${x.count}</b>
+</div>
+`;
+});
+
+document.getElementById("topArrs").innerHTML = arrHtml;
+
+}catch(err){
+console.log(err);
+}
+
+}
+
+loadDashboard();

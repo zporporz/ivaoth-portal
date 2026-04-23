@@ -324,3 +324,20 @@ display:inline-block;
 html{
 scroll-behavior:smooth;
 }
+
+.rank-row{
+display:flex;
+justify-content:space-between;
+padding:10px 0;
+border-bottom:1px solid rgba(255,255,255,.06);
+font-size:15px;
+}
+
+.rank-row span{
+color:#dfe9ff;
+font-weight:600;
+}
+
+.rank-row b{
+color:#66a8ff;
+}
