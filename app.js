@@ -331,3 +331,17 @@ return `<span class="badge blue">${f.last_state}</span>`;
 return '<span class="badge blue">Online</span>';
 
 }
+
+function goToSection(id){
+
+const el = document.getElementById(id);
+
+if(el){
+history.replaceState(null, null, "#" + id);
+el.scrollIntoView({
+behavior:"smooth",
+block:"start"
+});
+}
+
+}
