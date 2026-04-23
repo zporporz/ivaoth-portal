@@ -208,27 +208,55 @@ results.innerHTML =
 
 function exportCSV(){
 
-if(latestData.length===0){
+if(latestData.length === 0){
 alert("No data to export.");
 return;
 }
 
-let csv = "Callsign,Aircraft,VID,DEP,ARR,Track ID\n";
+let csv =
+"Track ID,Callsign,VID,Departure,Arrival,Aircraft,Status,Search Time UTC\n";
 
 latestData.forEach(f=>{
-csv += `${f.callsign},${f.aircraft},${f.vid},${f.dep},${f.arr},${f.track_id}\n`;
+
+csv += [
+f.track_id || "",
+f.callsign || "",
+f.vid || "",
+f.dep || "",
+f.arr || "",
+f.aircraft || "",
+cleanCSV(f.status || ""),
+cleanCSV(f.time || "")
+].join(",") + "\n";
+
 });
 
-const blob = new Blob([csv], {type:"text/csv"});
+const blob = new Blob([csv], {
+type:"text/csv;charset=utf-8;"
+});
+
 const url = URL.createObjectURL(blob);
 
 const a = document.createElement("a");
 a.href = url;
-a.download = "ivao-search.csv";
+
+const now = new Date();
+const fileName =
+`ivao-search-${now.getUTCFullYear()}-${
+String(now.getUTCMonth()+1).padStart(2,"0")
+}-${
+String(now.getUTCDate()).padStart(2,"0")
+}.csv`;
+
+a.download = fileName;
 a.click();
 
 URL.revokeObjectURL(url);
 
+}
+
+function cleanCSV(value){
+return `"${String(value).replace(/"/g,'""')}"`;
 }
 
 function renderStatus(f){
