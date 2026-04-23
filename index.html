@@ -277,9 +277,10 @@ async function searchFlights(){
   const toDate = document.getElementById("toDate").value;
   const toTime = document.getElementById("toTime").value;
 
-  if(!dep || !arr || !fromDate || !fromTime || !toDate || !toTime){
+  if((!dep && !arr) || !fromDate || !fromTime || !toDate || !toTime){
     results.innerHTML =
-    '<div class="alert error">Please complete all search fields.</div>';
+    results.innerHTML =
+    '<div class="alert error">Please enter Departure or Arrival, and complete date/time.</div>';
     return;
   }
 
