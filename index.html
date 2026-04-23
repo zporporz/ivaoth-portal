@@ -297,11 +297,54 @@ p{
   </p>
 </section>
 
+<div class="card" style="margin-top:28px;">
+  <h2>Search Flights</h2>
+
+  <div class="cta">
+    <input id="dep" placeholder="Departure ICAO" class="btn secondary">
+    <input id="arr" placeholder="Arrival ICAO" class="btn secondary">
+    <button onclick="searchFlights()" class="btn primary">Search</button>
+  </div>
+
+  <div id="results" style="margin-top:20px;"></div>
+</div>
+
 </main>
 
 <div class="footer">
   Traffic TH • Built in Thailand
 </div>
+
+<script>
+async function searchFlights() {
+  const dep = document.getElementById("dep").value.toUpperCase();
+  const arr = document.getElementById("arr").value.toUpperCase();
+
+  const res = await fetch(
+    `https://ivaoth-bot.fly.dev/api/search?dep=${dep}&arr=${arr}`
+  );
+
+  const data = await res.json();
+
+  let html = "<table width='100%' style='color:white'>";
+  html += "<tr><th>Callsign</th><th>Aircraft</th><th>VID</th><th>Time</th></tr>";
+
+  data.forEach(f => {
+    html += `
+      <tr>
+        <td>${f.callsign}</td>
+        <td>${f.aircraft}</td>
+        <td>${f.vid}</td>
+        <td>${f.time}</td>
+      </tr>
+    `;
+  });
+
+  html += "</table>";
+
+  document.getElementById("results").innerHTML = html;
+}
+</script>
 
 </body>
 </html>
