@@ -341,3 +341,8 @@ font-weight:600;
 .rank-row b{
 color:#66a8ff;
 }
+
+canvas{
+max-width:100%;
+height:260px !important;
+}

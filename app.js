@@ -368,33 +368,41 @@ data.landed;
 document.getElementById("dMissing").innerText =
 data.missing;
 
-/* top departures */
-let depHtml = "";
-
-data.top_departures.forEach(x=>{
-depHtml += `
-<div class="rank-row">
-<span>${x.icao}</span>
-<b>${x.count}</b>
-</div>
-`;
+/* donut departures */
+new Chart(document.getElementById("topDeps"), {
+type: "doughnut",
+data: {
+labels: data.top_departures.map(x => x.icao),
+datasets: [{
+data: data.top_departures.map(x => x.count),
+borderWidth: 0
+}]
+},
+options: {
+plugins:{
+legend:{position:"bottom"}
+},
+cutout:"65%"
+}
 });
 
-document.getElementById("topDeps").innerHTML = depHtml;
-
-/* top arrivals */
-let arrHtml = "";
-
-data.top_arrivals.forEach(x=>{
-arrHtml += `
-<div class="rank-row">
-<span>${x.icao}</span>
-<b>${x.count}</b>
-</div>
-`;
+/* donut arrivals */
+new Chart(document.getElementById("topArrs"), {
+type: "doughnut",
+data: {
+labels: data.top_arrivals.map(x => x.icao),
+datasets: [{
+data: data.top_arrivals.map(x => x.count),
+borderWidth: 0
+}]
+},
+options: {
+plugins:{
+legend:{position:"bottom"}
+},
+cutout:"65%"
+}
 });
-
-document.getElementById("topArrs").innerHTML = arrHtml;
 
 }catch(err){
 console.log(err);
