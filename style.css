@@ -360,10 +360,10 @@ max-height:320px;
 
 #topBtn{
 position:fixed;
-right:22px;
-bottom:22px;
-width:52px;
-height:52px;
+right:28px;
+bottom:28px;
+width:56px;
+height:56px;
 border:none;
 border-radius:50%;
 background:linear-gradient(135deg,#2f7cff,#5aa2ff);
@@ -371,16 +371,18 @@ color:#fff;
 font-size:24px;
 font-weight:800;
 cursor:pointer;
-box-shadow:0 10px 25px rgba(0,0,0,.35);
+box-shadow:0 12px 30px rgba(0,0,0,.35);
 display:none;
-z-index:999;
+z-index:99999;
 transition:.25s;
 }
 
-#topBtn:hover{
-transform:translateY(-3px);
+#topBtn.show{
+display:flex;
+align-items:center;
+justify-content:center;
 }
 
-#topBtn.show{
-display:block;
+#topBtn:hover{
+transform:translateY(-4px) scale(1.03);
 }
