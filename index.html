@@ -279,7 +279,6 @@ async function searchFlights(){
 
   if((!dep && !arr) || !fromDate || !fromTime || !toDate || !toTime){
     results.innerHTML =
-    results.innerHTML =
     '<div class="alert error">Please enter Departure or Arrival, and complete date/time.</div>';
     return;
   }
@@ -296,10 +295,6 @@ async function searchFlights(){
       `https://ivaoth-bot.fly.dev/api/search?dep=${dep}&arr=${arr}&from=${encodeURIComponent(from)}&to=${encodeURIComponent(to)}`
     );
 
-    if(!res.ok){
-      throw new Error("API Error");
-    }
-
     const data = await res.json();
 
     if(data.length === 0){
@@ -314,6 +309,8 @@ async function searchFlights(){
         <th>Callsign</th>
         <th>Aircraft</th>
         <th>VID</th>
+        <th>DEP</th>
+        <th>ARR</th>
         <th>Time</th>
       </tr>
     `;
@@ -321,10 +318,12 @@ async function searchFlights(){
     data.forEach(f => {
       html += `
       <tr>
-        <td>${f.callsign}</td>
-        <td>${f.aircraft}</td>
-        <td>${f.vid}</td>
-        <td>${f.time}</td>
+        <td>${f.callsign || "-"}</td>
+        <td>${f.aircraft || "-"}</td>
+        <td>${f.vid || "-"}</td>
+        <td>${f.dep || "-"}</td>
+        <td>${f.arr || "-"}</td>
+        <td>${f.time || "-"}</td>
       </tr>
       `;
     });
