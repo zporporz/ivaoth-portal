@@ -317,32 +317,63 @@ p{
 
 <script>
 async function searchFlights() {
-  const dep = document.getElementById("dep").value.toUpperCase();
-  const arr = document.getElementById("arr").value.toUpperCase();
+  const results = document.getElementById("results");
 
-  const res = await fetch(
-    `https://ivaoth-bot.fly.dev/api/search?dep=${dep}&arr=${arr}`
-  );
+  try {
+    results.innerHTML = "Loading...";
 
-  const data = await res.json();
+    const dep = document.getElementById("dep").value.trim().toUpperCase();
+    const arr = document.getElementById("arr").value.trim().toUpperCase();
 
-  let html = "<table width='100%' style='color:white'>";
-  html += "<tr><th>Callsign</th><th>Aircraft</th><th>VID</th><th>Time</th></tr>";
+    if (!dep || !arr) {
+      results.innerHTML = "Please enter departure and arrival ICAO.";
+      return;
+    }
 
-  data.forEach(f => {
-    html += `
-      <tr>
-        <td>${f.callsign}</td>
-        <td>${f.aircraft}</td>
-        <td>${f.vid}</td>
-        <td>${f.time}</td>
-      </tr>
+    const res = await fetch(
+      `https://ivaoth-bot.fly.dev/api/search?dep=${dep}&arr=${arr}`
+    );
+
+    if (!res.ok) {
+      throw new Error("API Error: " + res.status);
+    }
+
+    const data = await res.json();
+
+    if (data.length === 0) {
+      results.innerHTML = "No flights found.";
+      return;
+    }
+
+    let html = `
+      <table width="100%" style="color:white;border-collapse:collapse;">
+        <tr>
+          <th align="left">Callsign</th>
+          <th align="left">Aircraft</th>
+          <th align="left">VID</th>
+          <th align="left">Time</th>
+        </tr>
     `;
-  });
 
-  html += "</table>";
+    data.forEach(f => {
+      html += `
+        <tr>
+          <td>${f.callsign}</td>
+          <td>${f.aircraft}</td>
+          <td>${f.vid}</td>
+          <td>${f.time}</td>
+        </tr>
+      `;
+    });
 
-  document.getElementById("results").innerHTML = html;
+    html += "</table>";
+
+    results.innerHTML = html;
+
+  } catch (err) {
+    console.error(err);
+    results.innerHTML = "Error: " + err.message;
+  }
 }
 </script>
 
