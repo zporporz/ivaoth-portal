@@ -216,6 +216,23 @@ main{
     width:100%;
   }
 }
+
+.alert-error{
+  margin-top:24px;
+  padding:14px 18px;
+  border-radius:14px;
+  background:rgba(239,68,68,.15);
+  border:1px solid rgba(239,68,68,.45);
+  color:#fca5a5;
+  font-weight:700;
+  text-align:center;
+}
+
+input[type="date"],
+input[type="time"]{
+  color:#cbd5e1;
+}
+
 </style>
 </head>
 
@@ -244,11 +261,13 @@ main{
     Search real IVAO Thailand traffic history instantly.
   </p>
 
-  <div class="search-row">
-    <input id="dep" placeholder="Departure ICAO">
-    <input id="arr" placeholder="Arrival ICAO">
-    <button onclick="searchFlights()">Search</button>
-  </div>
+<div class="search-row">
+  <input id="dep" placeholder="Departure ICAO">
+  <input id="arr" placeholder="Arrival ICAO">
+  <input id="date" type="date">
+  <input id="time" type="time">
+  <button onclick="searchFlights()">Search</button>
+</div>
 
   <div id="results"></div>
 
@@ -267,11 +286,14 @@ async function searchFlights() {
   try {
     results.innerHTML = "Loading...";
 
-    const dep = document.getElementById("dep").value.trim().toUpperCase();
-    const arr = document.getElementById("arr").value.trim().toUpperCase();
+    const dep  = document.getElementById("dep").value.trim().toUpperCase();
+    const arr  = document.getElementById("arr").value.trim().toUpperCase();
+    const date = document.getElementById("date").value;
+    const time = document.getElementById("time").value;
 
-    if (!dep || !arr) {
-      results.innerHTML = "Please enter departure and arrival ICAO.";
+    if (!dep || !arr || !date || !time) {
+      results.innerHTML =
+        '<div class="alert-error">Please complete Departure, Arrival, Date and Time.</div>';
       return;
     }
 
