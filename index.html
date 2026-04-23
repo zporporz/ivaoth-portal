@@ -210,6 +210,58 @@ p{
     height:120px;
   }
 }
+
+main{
+  max-width:900px;
+  margin:70px auto;
+  padding:20px;
+}
+
+.search-box{
+  text-align:center;
+  padding:40px;
+}
+
+.search-box h1{
+  font-size:54px;
+  margin-bottom:10px;
+}
+
+.subtitle{
+  color:#cbd5e1;
+  margin-bottom:30px;
+}
+
+.search-row{
+  display:flex;
+  gap:12px;
+  justify-content:center;
+  flex-wrap:wrap;
+}
+
+.search-row input{
+  width:220px;
+  padding:14px;
+  border:none;
+  border-radius:14px;
+  background:rgba(255,255,255,.08);
+  color:white;
+}
+
+.search-row button{
+  padding:14px 26px;
+  border:none;
+  border-radius:14px;
+  background:#3b82f6;
+  color:white;
+  font-weight:700;
+  cursor:pointer;
+}
+
+#results{
+  margin-top:30px;
+  text-align:left;
+}
 </style>
 </head>
 
@@ -230,84 +282,20 @@ p{
 
 <main>
 
-<div class="card" style="margin-top:28px;">
-  <h2>Search Flights</h2>
+<div class="card search-box">
 
-  <div class="cta">
-    <input id="dep" placeholder="Departure ICAO" class="btn secondary">
-    <input id="arr" placeholder="Arrival ICAO" class="btn secondary">
-    <button onclick="searchFlights()" class="btn primary">Search</button>
+  <h1>Thailand Flight Search</h1>
+  <p class="subtitle">Search real IVAO Thailand traffic history instantly.</p>
+
+  <div class="search-row">
+    <input id="dep" placeholder="Departure ICAO">
+    <input id="arr" placeholder="Arrival ICAO">
+    <button onclick="searchFlights()">Search</button>
   </div>
 
-  <div id="results" style="margin-top:20px;"></div>
-</div>  
+  <div id="results"></div>
 
-<section class="hero">
-
-  <div class="card">
-    <h1>Thailand Flight Search Portal</h1>
-
-    <p>
-      Search traffic history, monitor routes, export reports,
-      and explore aviation movement with a clean modern interface.
-    </p>
-
-    <div class="cta">
-      <a href="#features" class="btn primary">Explore Features</a>
-      <a href="#soon" class="btn secondary">Coming Soon</a>
-    </div>
-  </div>
-
-  <div class="stats">
-    <div class="stat">
-      <div class="num">24/7</div>
-      <div class="label">Online Platform</div>
-    </div>
-
-    <div class="stat">
-      <div class="num">UTC</div>
-      <div class="label">Global Time Standard</div>
-    </div>
-
-    <div class="stat">
-      <div class="num">Excel</div>
-      <div class="label">Export Ready</div>
-    </div>
-
-    <div class="stat">
-      <div class="num">Live</div>
-      <div class="label">Future Real-Time Search</div>
-    </div>
-  </div>
-
-</section>
-
-<section id="features" class="features">
-
-  <div class="card feature">
-    <h3>🔎 Smart Search</h3>
-    <p>Find flights by departure, arrival, callsign, and date range.</p>
-  </div>
-
-  <div class="card feature">
-    <h3>📊 Reports</h3>
-    <p>Download clean spreadsheets for analysis and operations.</p>
-  </div>
-
-  <div class="card feature">
-    <h3>⚡ Fast Access</h3>
-    <p>Optimized for desktop and mobile with instant deployment.</p>
-  </div>
-
-</section>
-
-<section id="soon" class="card" style="margin-top:28px;">
-  <h3 style="margin-top:0;">🚀 Launching Soon</h3>
-  <p>
-    Traffic TH is under active development.
-    More search tools and analytics are on the way.
-  </p>
-</section>
+</div>
 
 </main>
 
