@@ -429,6 +429,9 @@ borderWidth:0
 },
 plugins:[centerTextPlugin],
 options:{
+responsive:true,
+maintainAspectRatio:true,
+aspectRatio:1,
 plugins:{
 legend:{
 position:"bottom",
