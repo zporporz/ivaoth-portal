@@ -343,6 +343,13 @@ color:#66a8ff;
 }
 
 canvas{
+display:block;
+width:100% !important;
 max-width:100%;
-height:260px !important;
+height:280px !important;
+margin:0 auto;
+}
+
+#statsSection .stats:last-child{
+grid-template-columns:repeat(2,1fr);
 }

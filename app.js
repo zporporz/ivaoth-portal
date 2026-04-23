@@ -346,6 +346,39 @@ block:"start"
 
 }
 
+let depChart = null;
+let arrChart = null;
+
+const centerTextPlugin = {
+id: "centerTextPlugin",
+beforeDraw(chart) {
+
+const meta = chart.getDatasetMeta(0);
+if (!meta.data.length) return;
+
+const { ctx } = chart;
+const x = meta.data[0].x;
+const y = meta.data[0].y;
+
+const total =
+chart.data.datasets[0].data.reduce((a,b)=>a+b,0);
+
+ctx.save();
+ctx.textAlign = "center";
+ctx.textBaseline = "middle";
+
+ctx.fillStyle = "#ffffff";
+ctx.font = "bold 28px Inter";
+ctx.fillText(total, x, y - 8);
+
+ctx.fillStyle = "#8ea7cc";
+ctx.font = "14px Inter";
+ctx.fillText("Total", x, y + 18);
+
+ctx.restore();
+}
+};
+
 async function loadDashboard(){
 
 try{
@@ -356,51 +389,53 @@ const res = await fetch(
 
 const data = await res.json();
 
-document.getElementById("dPilots").innerText =
-data.pilots_online;
+document.getElementById("dPilots").innerText = data.pilots_online;
+document.getElementById("dAtc").innerText = data.atc_online;
+document.getElementById("dLanded").innerText = data.landed;
+document.getElementById("dMissing").innerText = data.missing;
 
-document.getElementById("dAtc").innerText =
-data.atc_online;
+if(depChart) depChart.destroy();
+if(arrChart) arrChart.destroy();
 
-document.getElementById("dLanded").innerText =
-data.landed;
-
-document.getElementById("dMissing").innerText =
-data.missing;
-
-/* donut departures */
-new Chart(document.getElementById("topDeps"), {
-type: "doughnut",
-data: {
-labels: data.top_departures.map(x => x.icao),
-datasets: [{
-data: data.top_departures.map(x => x.count),
-borderWidth: 0
+depChart = new Chart(document.getElementById("topDeps"), {
+type:"doughnut",
+data:{
+labels:data.top_departures.map(x=>x.icao),
+datasets:[{
+data:data.top_departures.map(x=>x.count),
+borderWidth:0
 }]
 },
-options: {
+plugins:[centerTextPlugin],
+options:{
 plugins:{
-legend:{position:"bottom"}
+legend:{
+position:"bottom",
+labels:{color:"#dfe8ff"}
+}
 },
-cutout:"65%"
+cutout:"68%"
 }
 });
 
-/* donut arrivals */
-new Chart(document.getElementById("topArrs"), {
-type: "doughnut",
-data: {
-labels: data.top_arrivals.map(x => x.icao),
-datasets: [{
-data: data.top_arrivals.map(x => x.count),
-borderWidth: 0
+arrChart = new Chart(document.getElementById("topArrs"), {
+type:"doughnut",
+data:{
+labels:data.top_arrivals.map(x=>x.icao),
+datasets:[{
+data:data.top_arrivals.map(x=>x.count),
+borderWidth:0
 }]
 },
-options: {
+plugins:[centerTextPlugin],
+options:{
 plugins:{
-legend:{position:"bottom"}
+legend:{
+position:"bottom",
+labels:{color:"#dfe8ff"}
+}
 },
-cutout:"65%"
+cutout:"68%"
 }
 });
 
