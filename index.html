@@ -773,52 +773,38 @@ function renderStatus(f){
 const status = (f.status || "").toLowerCase().trim();
 const state  = (f.last_state || "").toLowerCase().trim();
 
-/* landed first */
+/* landed */
 if(f.landed_at){
 return '<span class="badge green">Landed</span>';
 }
 
-/* disconnected / missing */
+/* enroute states */
+if(
+state.includes("route") ||
+state.includes("cruise") ||
+state.includes("climb") ||
+state.includes("descent") ||
+state.includes("approach")
+){
+return '<span class="badge yellow">Enroute</span>';
+}
+
+/* ground states */
+if(
+state.includes("boarding") ||
+state.includes("taxi") ||
+state.includes("push") ||
+state.includes("block")
+){
+return '<span class="badge blue">Ground</span>';
+}
+
+/* disconnected without landing */
 if(status === "offline"){
-
-if(state.includes("block")){
-return '<span class="badge green">Completed</span>';
+return '<span class="badge red">Missing</span>';
 }
 
-return '<span class="badge red">Offline</span>';
-}
-
-/* online states */
-if(state.includes("route")){
-return '<span class="badge yellow">En Route</span>';
-}
-
-if(state.includes("approach")){
-return '<span class="badge yellow">Approach</span>';
-}
-
-if(state.includes("boarding")){
-return '<span class="badge blue">Boarding</span>';
-}
-
-if(state.includes("taxi")){
-return '<span class="badge blue">Taxiing</span>';
-}
-
-if(state.includes("push")){
-return '<span class="badge blue">Pushback</span>';
-}
-
-if(state.includes("block")){
-return '<span class="badge green">On Blocks</span>';
-}
-
-/* fallback use raw state */
-if(f.last_state){
-return `<span class="badge blue">${f.last_state}</span>`;
-}
-
-/* online no state */
+/* online but unknown */
 if(status === "online"){
 return '<span class="badge blue">Online</span>';
 }
