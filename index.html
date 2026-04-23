@@ -3,7 +3,11 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Thailand Flight Search Portal</title>
+<title>IVAO Thailand Tactical Flight Portal</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
 <style>
 *{
@@ -12,279 +16,463 @@
   box-sizing:border-box;
 }
 
+:root{
+  --bg:#07111f;
+  --panel:#0d1a2d;
+  --panel2:#10223b;
+  --line:#1e3555;
+  --text:#eaf2ff;
+  --muted:#91a7c7;
+  --blue:#2f7cff;
+  --blue2:#5aa2ff;
+  --green:#19c37d;
+  --red:#ff5d6c;
+  --glow:0 0 0 1px rgba(47,124,255,.18),0 12px 30px rgba(0,0,0,.35);
+}
+
 body{
   font-family:Inter,Arial,sans-serif;
-  background:linear-gradient(135deg,#081225,#10182d 40%,#1e3a8a);
+  background:
+  radial-gradient(circle at top right,#16386d 0%,transparent 30%),
+  radial-gradient(circle at bottom left,#0e2446 0%,transparent 35%),
+  var(--bg);
+  color:var(--text);
   min-height:100vh;
-  color:#fff;
 }
 
-/* HEADER */
-header{
+/* LAYOUT */
+.app{
+  display:grid;
+  grid-template-columns:260px 1fr;
+  min-height:100vh;
+}
+
+/* SIDEBAR */
+.sidebar{
+  background:linear-gradient(180deg,#07162c,#081120);
+  border-right:1px solid #122845;
+  padding:28px 20px;
+}
+
+.brand{
   display:flex;
-  justify-content:space-between;
+  gap:14px;
   align-items:center;
-  padding:24px 40px;
-  flex-wrap:wrap;
-  gap:20px;
+  margin-bottom:34px;
 }
 
-.logo{
-  height:72px;
+.brand img{
+  width:44px;
+  height:44px;
+  border-radius:50%;
+  object-fit:cover;
 }
 
-.top-box{
-  padding:12px 18px;
-  border-radius:16px;
-  background:rgba(255,255,255,.08);
-  border:1px solid rgba(255,255,255,.12);
-  text-align:right;
-}
-
-.top-box .title{
+.brand h2{
   font-size:20px;
-  font-weight:800;
+  line-height:1.1;
 }
 
-.top-box .sub{
+.brand span{
+  display:block;
+  color:var(--muted);
+  font-size:12px;
+  margin-top:4px;
+}
+
+.nav{
+  display:flex;
+  flex-direction:column;
+  gap:10px;
+}
+
+.nav a{
+  text-decoration:none;
+  color:#dbe8ff;
+  padding:14px 16px;
+  border-radius:14px;
+  background:transparent;
+  transition:.2s;
+  font-weight:600;
+  border:1px solid transparent;
+}
+
+.nav a:hover,
+.nav a.active{
+  background:rgba(47,124,255,.12);
+  border-color:rgba(47,124,255,.25);
+}
+
+.sidebox{
+  margin-top:28px;
+  padding:18px;
+  border-radius:18px;
+  background:rgba(255,255,255,.03);
+  border:1px solid #173155;
+}
+
+.sidebox h4{
+  margin-bottom:10px;
+}
+
+.sidebox p{
+  color:var(--muted);
   font-size:14px;
-  color:#cbd5e1;
+  line-height:1.6;
 }
 
 /* MAIN */
-main{
-  max-width:920px;
-  margin:50px auto;
-  padding:20px;
+.main{
+  padding:28px;
 }
 
-.card{
-  background:rgba(255,255,255,.08);
-  border:1px solid rgba(255,255,255,.12);
-  border-radius:26px;
-  padding:48px;
-  backdrop-filter:blur(10px);
-  box-shadow:0 20px 45px rgba(0,0,0,.28);
+.topbar{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:20px;
+  margin-bottom:24px;
+  flex-wrap:wrap;
 }
 
-h1{
-  font-size:58px;
-  text-align:center;
-  margin-bottom:12px;
-  line-height:1.05;
+.title h1{
+  font-size:32px;
+  letter-spacing:.5px;
 }
 
-.subtitle{
-  text-align:center;
-  color:#cbd5e1;
-  margin-bottom:34px;
-  font-size:18px;
+.title p{
+  color:var(--muted);
+  margin-top:6px;
 }
 
-/* FORM */
-.grid2{
+.live{
+  padding:10px 14px;
+  border-radius:999px;
+  background:rgba(25,195,125,.12);
+  color:#7af0ba;
+  border:1px solid rgba(25,195,125,.25);
+  font-weight:700;
+  font-size:14px;
+}
+
+/* PANELS */
+.panel{
+  background:linear-gradient(180deg,var(--panel),var(--panel2));
+  border:1px solid var(--line);
+  border-radius:22px;
+  padding:22px;
+  box-shadow:var(--glow);
+}
+
+/* SEARCH */
+.search-grid{
   display:grid;
-  grid-template-columns:1fr 1fr;
-  gap:16px;
-  margin-bottom:16px;
+  grid-template-columns:repeat(4,1fr);
+  gap:14px;
+}
+
+label{
+  display:block;
+  font-size:13px;
+  color:var(--muted);
+  margin-bottom:8px;
 }
 
 input{
   width:100%;
-  padding:18px;
-  border:none;
-  border-radius:16px;
-  background:rgba(255,255,255,.08);
+  padding:14px 14px;
+  border-radius:14px;
+  border:1px solid #1b3557;
+  background:#081423;
   color:#fff;
-  font-size:16px;
   outline:none;
 }
 
-input::placeholder{
-  color:#cbd5e1;
+input:focus{
+  border-color:var(--blue);
 }
 
-input[type="date"],
-input[type="time"]{
-  color:#cbd5e1;
-}
-
-.btn-wrap{
-  text-align:center;
-  margin-top:8px;
+.actions{
+  margin-top:16px;
+  display:flex;
+  gap:12px;
+  flex-wrap:wrap;
 }
 
 button{
-  padding:18px 42px;
   border:none;
-  border-radius:16px;
-  background:#3b82f6;
-  color:#fff;
-  font-size:17px;
-  font-weight:800;
   cursor:pointer;
+  border-radius:14px;
+  padding:14px 22px;
+  font-weight:800;
   transition:.2s;
 }
 
-button:hover{
+.btn-main{
+  background:linear-gradient(135deg,var(--blue),var(--blue2));
+  color:#fff;
+}
+
+.btn-main:hover{
   transform:translateY(-2px);
-  background:#2563eb;
 }
 
-/* ALERT */
-.alert{
-  margin-top:24px;
-  padding:16px;
-  border-radius:14px;
-  text-align:center;
-  font-weight:700;
+.btn-ghost{
+  background:#0a1627;
+  color:#d7e5ff;
+  border:1px solid #1f395a;
 }
 
-.error{
-  background:rgba(239,68,68,.15);
-  border:1px solid rgba(239,68,68,.35);
-  color:#fca5a5;
+/* STATS */
+.stats{
+  margin-top:20px;
+  display:grid;
+  grid-template-columns:repeat(4,1fr);
+  gap:16px;
 }
 
-.info{
-  background:rgba(59,130,246,.15);
-  border:1px solid rgba(59,130,246,.35);
-  color:#bfdbfe;
+.stat{
+  padding:20px;
+  border-radius:20px;
+  background:linear-gradient(180deg,#0b182b,#0f223c);
+  border:1px solid var(--line);
+}
+
+.stat small{
+  color:var(--muted);
+}
+
+.stat h2{
+  font-size:34px;
+  margin-top:8px;
 }
 
 /* RESULTS */
+.results{
+  margin-top:22px;
+}
+
 #results{
-  margin-top:28px;
-  overflow-x:auto;
+  margin-top:14px;
+  overflow:auto;
 }
 
 table{
   width:100%;
   border-collapse:collapse;
+  min-width:860px;
 }
 
 th{
-  color:#93c5fd;
-  font-size:14px;
   text-align:left;
-  padding:12px;
-  border-bottom:1px solid rgba(255,255,255,.12);
+  color:#8fb6ff;
+  font-size:13px;
+  padding:14px;
+  border-bottom:1px solid #1f395a;
 }
 
 td{
-  padding:12px;
-  border-bottom:1px solid rgba(255,255,255,.06);
-  font-size:15px;
+  padding:14px;
+  border-bottom:1px solid rgba(255,255,255,.05);
 }
 
 tr:hover{
-  background:rgba(255,255,255,.04);
+  background:rgba(47,124,255,.05);
 }
 
-/* FOOTER */
-footer{
-  text-align:center;
-  padding:26px;
-  color:#cbd5e1;
-  font-size:14px;
+.route{
+  color:#9bc1ff;
+  font-weight:700;
+}
+
+.track{
+  text-decoration:none;
+  color:#72b2ff;
+  font-weight:800;
+}
+
+.msg{
+  padding:18px;
+  border-radius:16px;
+  margin-top:14px;
+  font-weight:700;
+}
+
+.info{
+  background:rgba(47,124,255,.08);
+  border:1px solid rgba(47,124,255,.18);
+}
+
+.error{
+  background:rgba(255,93,108,.08);
+  border:1px solid rgba(255,93,108,.18);
 }
 
 /* MOBILE */
-@media(max-width:850px){
-
-  h1{
-    font-size:42px;
+@media(max-width:1200px){
+  .search-grid,.stats{
+    grid-template-columns:repeat(2,1fr);
   }
+}
 
-  .grid2{
+@media(max-width:900px){
+  .app{
     grid-template-columns:1fr;
   }
 
-  .card{
-    padding:28px;
+  .sidebar{
+    display:none;
   }
 
-  header{
-    justify-content:center;
-    text-align:center;
+  .search-grid,.stats{
+    grid-template-columns:1fr;
   }
 
-  .top-box{
-    text-align:center;
+  .title h1{
+    font-size:26px;
+  }
+
+  .main{
+    padding:18px;
   }
 }
 </style>
 </head>
-
 <body>
 
-<header>
-  <img src="logo.png" class="logo">
+<div class="app">
 
-  <div class="top-box">
-    <div class="title">IVAO Flight Tracking System</div>
-    <div class="sub">Created by Ecgkasit B. - VID: 739898</div>
+<aside class="sidebar">
+  <div class="brand">
+    <img src="logo.png">
+    <div>
+      <h2>IVAO TH</h2>
+      <span>Tactical Portal</span>
+    </div>
   </div>
-</header>
 
-<main>
+  <div class="nav">
+    <a href="#" class="active">Dashboard</a>
+    <a href="#">Search Flights</a>
+    <a href="#">Live Board</a>
+    <a href="#">Airports</a>
+    <a href="#">Statistics</a>
+    <a href="#">Export Data</a>
+  </div>
 
-<div class="card">
+  <div class="sidebox">
+    <h4>Network Status</h4>
+    <p>Online and ready.<br>Connected to Fly.io API node.</p>
+  </div>
+</aside>
 
-<h1>Thailand Flight Search Portal</h1>
-<p class="subtitle">Search real IVAO Thailand traffic history instantly.</p>
+<main class="main">
 
-<div class="grid2">
-  <input id="dep" placeholder="Departure ICAO">
-  <input id="arr" placeholder="Arrival ICAO">
+<div class="topbar">
+  <div class="title">
+    <h1>THAILAND FLIGHT INTELLIGENCE SYSTEM</h1>
+    <p>Historical IVAO Thailand traffic search & route intelligence</p>
+  </div>
+
+  <div class="live">● LIVE DATA</div>
 </div>
 
-<div class="grid2">
-  <input id="fromDate" type="date">
-  <input id="fromTime" type="time">
+<div class="panel">
+
+<div class="search-grid">
+  <div>
+    <label>Departure ICAO</label>
+    <input id="dep" placeholder="VTBD">
+  </div>
+
+  <div>
+    <label>Arrival ICAO</label>
+    <input id="arr" placeholder="VTSM">
+  </div>
+
+  <div>
+    <label>From Date</label>
+    <input id="fromDate" type="date">
+  </div>
+
+  <div>
+    <label>From Time (UTC)</label>
+    <input id="fromTime" type="time">
+  </div>
+
+  <div>
+    <label>To Date</label>
+    <input id="toDate" type="date">
+  </div>
+
+  <div>
+    <label>To Time (UTC)</label>
+    <input id="toTime" type="time">
+  </div>
 </div>
 
-<div class="grid2">
-  <input id="toDate" type="date">
-  <input id="toTime" type="time">
+<div class="actions">
+  <button class="btn-main" onclick="searchFlights()">INITIATE SEARCH</button>
+  <button class="btn-ghost" onclick="resetForm()">RESET</button>
 </div>
 
-<div class="btn-wrap">
-  <button onclick="searchFlights()">Search Flights</button>
 </div>
 
-<div id="results"></div>
+<div class="stats">
+  <div class="stat">
+    <small>Flights Found</small>
+    <h2 id="statFlights">0</h2>
+  </div>
 
+  <div class="stat">
+    <small>Unique Pilots</small>
+    <h2 id="statPilots">0</h2>
+  </div>
+
+  <div class="stat">
+    <small>Main Departure</small>
+    <h2 id="statDep">-</h2>
+  </div>
+
+  <div class="stat">
+    <small>Main Arrival</small>
+    <h2 id="statArr">-</h2>
+  </div>
+</div>
+
+<div class="panel results">
+  <h3>Flight Search Results</h3>
+  <div id="results"></div>
 </div>
 
 </main>
-
-<footer>
-Traffic TH • Built in Thailand
-</footer>
+</div>
 
 <script>
+function resetForm(){
+  ["dep","arr","fromDate","fromTime","toDate","toTime"].forEach(id=>{
+    document.getElementById(id).value="";
+  });
+  document.getElementById("results").innerHTML="";
+}
+
 async function searchFlights(){
 
   const results = document.getElementById("results");
 
   const dep = document.getElementById("dep").value.trim().toUpperCase();
   const arr = document.getElementById("arr").value.trim().toUpperCase();
-
   const fromDate = document.getElementById("fromDate").value;
   const fromTime = document.getElementById("fromTime").value;
-
   const toDate = document.getElementById("toDate").value;
   const toTime = document.getElementById("toTime").value;
 
   if((!dep && !arr) || !fromDate || !fromTime || !toDate || !toTime){
-    results.innerHTML =
-    '<div class="alert error">Please enter Departure or Arrival, and complete date/time.</div>';
+    results.innerHTML = `<div class="msg error">Fill Departure or Arrival, and complete date/time.</div>`;
     return;
   }
 
-  results.innerHTML =
-  '<div class="alert info">Loading flights...</div>';
+  results.innerHTML = `<div class="msg info">Scanning traffic database...</div>`;
 
   try{
 
@@ -297,11 +485,21 @@ async function searchFlights(){
 
     const data = await res.json();
 
-    if(data.length === 0){
-      results.innerHTML =
-      '<div class="alert error">No flights found.</div>';
+    if(data.length===0){
+      results.innerHTML = `<div class="msg error">No flights detected.</div>`;
       return;
     }
+
+    // stats
+    document.getElementById("statFlights").innerText = data.length;
+    document.getElementById("statPilots").innerText =
+      new Set(data.map(x=>x.vid)).size;
+
+    document.getElementById("statDep").innerText =
+      data[0].dep || "-";
+
+    document.getElementById("statArr").innerText =
+      data[0].arr || "-";
 
     let html = `
     <table>
@@ -309,26 +507,23 @@ async function searchFlights(){
         <th>Callsign</th>
         <th>Aircraft</th>
         <th>VID</th>
-        <th>DEP</th>
-        <th>ARR</th>
+        <th>Route</th>
         <th>Track</th>
       </tr>
     `;
 
-    data.forEach(f => {
+    data.forEach(f=>{
       html += `
       <tr>
-        <td>${f.callsign || "-"}</td>
-        <td>${f.aircraft || "-"}</td>
-        <td>${f.vid || "-"}</td>
-        <td>${f.dep || "-"}</td>
-        <td>${f.arr || "-"}</td>
+        <td>${f.callsign}</td>
+        <td>${f.aircraft}</td>
+        <td>${f.vid}</td>
+        <td class="route">${f.dep} → ${f.arr}</td>
         <td>
-          <a href="https://tracker.ivao.aero/sessions/${f.track_id}"
-          target="_blank"
-          rel="noopener noreferrer"
-          style="color:#60a5fa;font-weight:700;text-decoration:none;">
-          ${f.track_id || "-"}
+          <a class="track"
+          href="https://tracker.ivao.aero/sessions/${f.track_id}"
+          target="_blank">
+          #${f.track_id}
           </a>
         </td>
       </tr>
@@ -340,10 +535,7 @@ async function searchFlights(){
     results.innerHTML = html;
 
   }catch(err){
-
-    results.innerHTML =
-    '<div class="alert error">Unable to load data.</div>';
-
+    results.innerHTML = `<div class="msg error">API connection failed.</div>`;
   }
 }
 </script>
