@@ -6,7 +6,6 @@
 <title>Traffic TH</title>
 
 <style>
-/* Reset */
 *{
   box-sizing:border-box;
 }
@@ -39,7 +38,7 @@ header{
   width:auto;
 }
 
-/* Right Info Box */
+/* Right Box */
 .pill{
   padding:10px 18px;
   min-width:330px;
@@ -72,110 +71,106 @@ header{
   text-decoration:underline;
 }
 
-/* Main Layout */
+/* Main */
 main{
-  max-width:1100px;
-  margin:0 auto;
-  padding:48px 24px;
+  max-width:950px;
+  margin:90px auto 40px;
+  padding:20px;
 }
 
-.hero{
-  display:grid;
-  grid-template-columns:1.2fr .8fr;
-  gap:28px;
-  align-items:center;
-}
-
-/* Cards */
+/* Card */
 .card{
   background:rgba(255,255,255,.08);
   backdrop-filter:blur(10px);
   border:1px solid rgba(255,255,255,.12);
   border-radius:24px;
-  padding:28px;
+  padding:50px 45px;
   box-shadow:0 20px 40px rgba(0,0,0,.25);
 }
 
-/* Typography */
-h1{
-  font-size:56px;
+/* Search Box */
+.search-box{
+  text-align:center;
+}
+
+.search-box h1{
+  font-size:58px;
   line-height:1.05;
-  margin:0 0 16px;
+  margin:0 0 12px;
 }
 
-p{
+.subtitle{
+  color:#cbd5e1;
   font-size:18px;
-  color:#dbeafe;
-  line-height:1.6;
+  margin-bottom:34px;
 }
 
-/* Buttons */
-.cta{
+/* Search Row */
+.search-row{
   display:flex;
+  justify-content:center;
   gap:12px;
   flex-wrap:wrap;
-  margin-top:22px;
 }
 
-.btn{
-  padding:14px 18px;
+.search-row input{
+  width:220px;
+  padding:14px;
+  border:none;
   border-radius:14px;
-  text-decoration:none;
+  background:rgba(255,255,255,.08);
+  color:#ffffff;
+  font-size:15px;
+  outline:none;
+}
+
+.search-row input::placeholder{
+  color:#94a3b8;
+}
+
+.search-row button{
+  padding:14px 26px;
+  border:none;
+  border-radius:14px;
+  background:#3b82f6;
+  color:#ffffff;
   font-weight:700;
+  cursor:pointer;
   transition:.2s ease;
 }
 
-.btn:hover{
+.search-row button:hover{
   transform:translateY(-2px);
+  background:#2563eb;
 }
 
-.primary{
-  background:#3b82f6;
-  color:#ffffff;
-}
-
-.secondary{
-  background:rgba(255,255,255,.08);
-  color:#ffffff;
-  border:1px solid rgba(255,255,255,.15);
-}
-
-/* Stats */
-.stats{
-  display:grid;
-  grid-template-columns:repeat(2,1fr);
-  gap:14px;
-}
-
-.stat{
-  padding:18px;
-  border-radius:18px;
-  background:rgba(255,255,255,.06);
-}
-
-.num{
-  font-size:28px;
-  font-weight:800;
-}
-
-.label{
-  color:#cbd5e1;
-}
-
-/* Features */
-.features{
+/* Results */
+#results{
   margin-top:34px;
-  display:grid;
-  grid-template-columns:repeat(3,1fr);
-  gap:18px;
+  text-align:left;
+  overflow-x:auto;
 }
 
-.feature{
-  padding:20px;
+#results table{
+  width:100%;
+  border-collapse:collapse;
 }
 
-.feature h3{
-  margin:0 0 10px;
+#results th{
+  color:#93c5fd;
+  font-size:14px;
+  padding:12px 10px;
+  border-bottom:1px solid rgba(255,255,255,.12);
+}
+
+#results td{
+  padding:11px 10px;
+  border-bottom:1px solid rgba(255,255,255,.06);
+  font-size:15px;
+}
+
+#results tr:hover{
+  background:rgba(255,255,255,.04);
 }
 
 /* Footer */
@@ -183,9 +178,10 @@ p{
   padding:28px;
   text-align:center;
   color:#cbd5e1;
+  font-size:14px;
 }
 
-/* Responsive */
+/* Mobile */
 @media(max-width:900px){
 
   header{
@@ -197,70 +193,25 @@ p{
     text-align:center;
   }
 
-  .hero,
-  .features{
-    grid-template-columns:1fr;
+  .logo{
+    height:110px;
   }
 
-  h1{
+  .search-box h1{
     font-size:42px;
   }
 
-  .logo{
-    height:120px;
+  .card{
+    padding:35px 24px;
   }
-}
 
-main{
-  max-width:900px;
-  margin:70px auto;
-  padding:20px;
-}
+  .search-row input{
+    width:100%;
+  }
 
-.search-box{
-  text-align:center;
-  padding:40px;
-}
-
-.search-box h1{
-  font-size:54px;
-  margin-bottom:10px;
-}
-
-.subtitle{
-  color:#cbd5e1;
-  margin-bottom:30px;
-}
-
-.search-row{
-  display:flex;
-  gap:12px;
-  justify-content:center;
-  flex-wrap:wrap;
-}
-
-.search-row input{
-  width:220px;
-  padding:14px;
-  border:none;
-  border-radius:14px;
-  background:rgba(255,255,255,.08);
-  color:white;
-}
-
-.search-row button{
-  padding:14px 26px;
-  border:none;
-  border-radius:14px;
-  background:#3b82f6;
-  color:white;
-  font-weight:700;
-  cursor:pointer;
-}
-
-#results{
-  margin-top:30px;
-  text-align:left;
+  .search-row button{
+    width:100%;
+  }
 }
 </style>
 </head>
@@ -284,8 +235,11 @@ main{
 
 <div class="card search-box">
 
-  <h1>Thailand Flight Search</h1>
-  <p class="subtitle">Search real IVAO Thailand traffic history instantly.</p>
+  <h1>Thailand Flight Search Portal</h1>
+
+  <p class="subtitle">
+    Search real IVAO Thailand traffic history instantly.
+  </p>
 
   <div class="search-row">
     <input id="dep" placeholder="Departure ICAO">
@@ -334,12 +288,12 @@ async function searchFlights() {
     }
 
     let html = `
-      <table width="100%" style="color:white;border-collapse:collapse;">
+      <table>
         <tr>
-          <th align="left">Callsign</th>
-          <th align="left">Aircraft</th>
-          <th align="left">VID</th>
-          <th align="left">Time</th>
+          <th>Callsign</th>
+          <th>Aircraft</th>
+          <th>VID</th>
+          <th>Time</th>
         </tr>
     `;
 
