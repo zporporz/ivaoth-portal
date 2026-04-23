@@ -307,6 +307,52 @@ border:1px solid rgba(255,93,108,.18);
 .main{padding:18px;}
 .title h1{font-size:26px;}
 }
+.search-options{
+margin-top:18px;
+padding-top:18px;
+border-top:1px solid #183254;
+display:flex;
+justify-content:space-between;
+align-items:center;
+gap:18px;
+flex-wrap:wrap;
+}
+
+.option-group{
+display:flex;
+gap:24px;
+flex-wrap:wrap;
+}
+
+.option-item{
+display:flex;
+align-items:center;
+gap:10px;
+font-size:14px;
+font-weight:600;
+}
+
+.option-item input{
+width:18px;
+height:18px;
+accent-color:#2f7cff;
+}
+
+.action-group{
+display:flex;
+gap:12px;
+flex-wrap:wrap;
+}
+
+.btn-green{
+background:linear-gradient(135deg,#1f8f42,#35b85b);
+color:#fff;
+}
+
+.btn-green:hover{
+transform:translateY(-2px);
+}
+
 </style>
 </head>
 
@@ -325,7 +371,6 @@ border:1px solid rgba(255,93,108,.18);
 <a href="#">Live Board</a>
 <a href="#">Airports</a>
 <a href="#">Statistics</a>
-<a href="#">Export Data</a>
 </div>
 
 <div class="sidebox">
@@ -387,9 +432,28 @@ Ecgkasit B. 739898
 </div>
 </div>
 
-<div class="actions">
-<button class="btn-main" onclick="searchFlights()">INITIATE SEARCH</button>
+<div class="search-options">
+
+<div class="option-group">
+
+<label class="option-item">
+<input type="checkbox" id="bidirectional" checked>
+Bidirectional
+</label>
+
+<label class="option-item">
+<input type="checkbox" id="specificRoutes">
+Specific Routes
+</label>
+
+</div>
+
+<div class="action-group">
+<button class="btn-main" onclick="searchFlights()">SEARCH</button>
+<button class="btn-green" onclick="exportCSV()">EXPORT CSV</button>
 <button class="btn-ghost" onclick="resetForm()">RESET</button>
+</div>
+
 </div>
 
 </div>
@@ -425,6 +489,7 @@ Ecgkasit B. 739898
 </div>
 
 <script>
+let latestData = [];  
 function resetForm(){
 ["dep","arr","fromDate","fromTime","toDate","toTime"].forEach(id=>{
 document.getElementById(id).value="";
@@ -460,6 +525,7 @@ const res=await fetch(
 );
 
 const data=await res.json();
+latestData = data;
 
 if(data.length===0){
 results.innerHTML=`<div class="msg error">No flights detected.</div>`;
@@ -508,6 +574,30 @@ results.innerHTML=html;
 results.innerHTML=`<div class="msg error">API connection failed.</div>`;
 }
 }
+function exportCSV(){
+
+if(latestData.length===0){
+alert("No data to export.");
+return;
+}
+
+let csv = "Callsign,Aircraft,VID,DEP,ARR,Track ID\n";
+
+latestData.forEach(f=>{
+csv += `${f.callsign},${f.aircraft},${f.vid},${f.dep},${f.arr},${f.track_id}\n`;
+});
+
+const blob = new Blob([csv], {type:"text/csv"});
+const url = URL.createObjectURL(blob);
+
+const a = document.createElement("a");
+a.href = url;
+a.download = "ivao-search.csv";
+a.click();
+
+URL.revokeObjectURL(url);
+}
+
 </script>
 
 </body>
