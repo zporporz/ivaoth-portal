@@ -609,8 +609,8 @@ return;
 
 document.getElementById("resultSection").style.display = "block";
 
-const from = fromDate + " " + fromTime + ":00";
-const to   = toDate + " " + toTime + ":59";
+const from = `${fromDate}T${fromTime}:00.000Z`;
+const to   = `${toDate}T${toTime}:59.000Z`;
 
 let allData = [];
 
@@ -772,17 +772,17 @@ function renderStatus(f){
 
 const status = (f.status || "").toLowerCase().trim();
 
-/* 1 landed first */
+/* landed first */
 if(f.landed_at){
 return '<span class="badge green">Landed</span>';
 }
 
-/* 2 offline = missing */
+/* offline always missing */
 if(status === "offline"){
 return '<span class="badge red">Missing</span>';
 }
 
-/* 3 online = show live state */
+/* only online states below */
 const state = (f.last_state || "").toLowerCase().trim();
 
 if(state.includes("route")){
