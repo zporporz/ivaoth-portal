@@ -393,6 +393,8 @@ document.getElementById("dPilots").innerText = data.pilots_online;
 document.getElementById("dAtc").innerText = data.atc_online;
 document.getElementById("dLanded").innerText = data.landed;
 document.getElementById("dMissing").innerText = data.missing;
+document.getElementById("lastUpdated").innerText =
+"Updated " + new Date().toUTCString().split(" ")[4] + " UTC";
 
 if(depChart) depChart.destroy();
 if(arrChart) arrChart.destroy();
@@ -466,3 +468,6 @@ top:0,
 behavior:"smooth"
 });
 }
+
+loadDashboard();
+setInterval(loadDashboard,30000);

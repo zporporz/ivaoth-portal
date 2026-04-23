@@ -386,3 +386,75 @@ justify-content:center;
 #topBtn:hover{
 transform:translateY(-4px) scale(1.03);
 }
+
+.stats-head{
+display:flex;
+justify-content:space-between;
+align-items:flex-start;
+gap:20px;
+flex-wrap:wrap;
+margin-bottom:10px;
+}
+
+.live-meta{
+display:flex;
+align-items:center;
+gap:10px;
+flex-wrap:wrap;
+color:#9bb2d3;
+font-size:13px;
+}
+
+.live-dot{
+width:10px;
+height:10px;
+border-radius:50%;
+background:#19c37d;
+box-shadow:0 0 12px #19c37d;
+animation:pulse 1.6s infinite;
+}
+
+@keyframes pulse{
+0%{opacity:1;transform:scale(1);}
+50%{opacity:.45;transform:scale(.85);}
+100%{opacity:1;transform:scale(1);}
+}
+
+.live-card.pilots{
+border-color:#2f7cff55;
+}
+
+.live-card.atc{
+border-color:#19c37d55;
+}
+
+.landed-card{
+border-color:#f0c14b55;
+}
+
+.missing-card{
+border-color:#ff5d6c55;
+}
+
+.chart-grid{
+grid-template-columns:repeat(2,1fr);
+}
+
+#statsSection canvas{
+display:block;
+width:100% !important;
+height:auto !important;
+max-height:320px;
+margin:0 auto;
+}
+
+#lastUpdated{
+color:#6ea8ff;
+font-weight:700;
+}
+
+@media(max-width:900px){
+.chart-grid{
+grid-template-columns:1fr;
+}
+}

@@ -169,47 +169,58 @@ Specific Routes
 
 <div class="panel" id="statsSection">
 
+<div class="stats-head">
+<div>
 <h3>Thailand Statistics</h3>
-<p class="hint">Live online counts + route rankings from the last 7 days</p>
+<p class="hint">Live network status • Historical traffic (last 7 days)</p>
+</div>
+
+<div class="live-meta">
+<span class="live-dot"></span>
+<span>Auto refresh 30s</span>
+<small id="lastUpdated">Updating...</small>
+</div>
+</div>
 
 <div class="stats" id="dashCards">
 
-<div class="stat">
+<div class="stat live-card pilots">
 <small>Pilots Online</small>
 <h2 id="dPilots">-</h2>
 </div>
 
-<div class="stat">
+<div class="stat live-card atc">
 <small>ATC Online</small>
 <h2 id="dAtc">-</h2>
 </div>
 
-<div class="stat">
-<small>Landed Flights</small>
+<div class="stat landed-card">
+<small>Landed Flights (7d)</small>
 <h2 id="dLanded">-</h2>
 </div>
 
-<div class="stat">
-<small>Missing Flights</small>
+<div class="stat missing-card">
+<small>Missing Flights (7d)</small>
 <h2 id="dMissing">-</h2>
 </div>
 
 </div>
 
-<div class="stats" style="margin-top:18px;">
+<div class="stats chart-grid">
 
 <div class="stat">
-<small>Top Departures</small>
+<small>Top Departures (7d)</small>
 <canvas id="topDeps"></canvas>
 </div>
 
 <div class="stat">
-<small>Top Arrivals</small>
+<small>Top Arrivals (7d)</small>
 <canvas id="topArrs"></canvas>
 </div>
 
 </div>
 
+</div>
 </div>
 
 </main>
