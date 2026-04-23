@@ -467,7 +467,10 @@ Specific Routes
 
 </div>
 
+<div id="resultSection" style="display:none;">
+
 <div class="stats">
+
 <div class="stat">
 <small>Flights Found</small>
 <h2 id="statFlights">0</h2>
@@ -487,11 +490,14 @@ Specific Routes
 <small>Main Arrival</small>
 <h2 id="statArr">-</h2>
 </div>
+
 </div>
 
 <div class="panel">
 <h3>Flight Search Results</h3>
 <div id="results"></div>
+</div>
+
 </div>
 
 </main>
@@ -540,6 +546,7 @@ if(el) el.value = "";
 document.getElementById("results").innerHTML = "";
 latestData = [];
 
+document.getElementById("resultSection").style.display = "none";
 document.getElementById("statFlights").innerText = "0";
 document.getElementById("statPilots").innerText = "0";
 document.getElementById("statDep").innerText = "-";
@@ -549,6 +556,7 @@ document.getElementById("statArr").innerText = "-";
 async function searchFlights(){
 
 const results = document.getElementById("results");
+document.getElementById("resultSection").style.display = "block";
 
 results.innerHTML =
 '<div class="msg">Searching database...</div>';
