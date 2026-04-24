@@ -685,6 +685,11 @@ let trendChart = null;
 async function loadSnapshot() {
   await loadTopAirlines();
   await loadTrafficTrend();
+
+  document.getElementById("snapshotUpdated").innerText =
+    "Updated " +
+    new Date().toUTCString().split(" ")[4] +
+    " UTC";
 }
 
 /* ===============================
