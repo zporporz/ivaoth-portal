@@ -253,46 +253,43 @@ ${renderStatus(r)}
 /* ===============================
    STATUS
 ================================= */
-function renderStatus(f) {
+function renderStatus(f){
 
-  const state = (f.last_state || "").trim().toLowerCase();
+ const state = (f.last_state || "").trim().toLowerCase();
 
-  // 1. landed จริงจาก DB
-  if (f.landed_at) {
-    return '<span class="badge green">LANDED</span>';
-  }
+ if (f.landed_at) {
+   return '<span class="badge green">LANDED</span>';
+ }
 
-  // 2. หลุดก่อน landed
-  if (f.status === "offline") {
-    return '<span class="badge red">MISSING</span>';
-  }
+ if (state === "landed") {
+   return '<span class="badge green">LANDED</span>';
+ }
 
-  // 3. ใช้ official IVAO state
-  if (state === "ground") {
-    return '<span class="badge blue">GROUND</span>';
-  }
+ if (f.status === "offline") {
+   return '<span class="badge red">MISSING</span>';
+ }
 
-  if (state === "departing") {
-    return '<span class="badge blue">DEPARTING</span>';
-  }
+ if (state === "ground") {
+   return '<span class="badge blue">GROUND</span>';
+ }
 
-  if (state === "climbing") {
-    return '<span class="badge cyan">CLIMBING</span>';
-  }
+ if (state === "departing") {
+   return '<span class="badge blue">DEPARTING</span>';
+ }
 
-  if (state === "en route") {
-    return '<span class="badge yellow">EN ROUTE</span>';
-  }
+ if (state === "climbing") {
+   return '<span class="badge cyan">CLIMBING</span>';
+ }
 
-  if (state === "approach") {
-    return '<span class="badge orange">APPROACH</span>';
-  }
+ if (state === "en route") {
+   return '<span class="badge yellow">EN ROUTE</span>';
+ }
 
-  if (state === "landed") {
-    return '<span class="badge green">LANDED</span>';
-  }
+ if (state === "approach") {
+   return '<span class="badge orange">APPROACH</span>';
+ }
 
-  return '<span class="badge blue">ONLINE</span>';
+ return '<span class="badge blue">ONLINE</span>';
 }
 
 /* ===============================
@@ -326,43 +323,50 @@ const centerTextPlugin = {
 async function loadDashboard() {
   try {
     const week =
-      new Date(
-        Date.now() - 7 * 86400000
-      ).toISOString();
+      new Date(Date.now() - 7 * 86400000).toISOString();
 
+    /* =====================================
+       PILOTS ONLINE (Thailand related only)
+    ===================================== */
     const { count: pilots } = await db
       .from("pilot_sessions")
-      .select("*", {
-        count: "exact",
-        head: true
-      })
-      .eq("status", "online");
+      .select("*", { count: "exact", head: true })
+      .eq("status", "online")
+      .or("departure.like.VT%,arrival.like.VT%");
 
+    /* =====================================
+       ATC ONLINE (Thailand only)
+    ===================================== */
     const { count: atc } = await db
       .from("atc_sessions")
-      .select("*", {
-        count: "exact",
-        head: true
-      })
-      .eq("status", "online");
+      .select("*", { count: "exact", head: true })
+      .eq("status", "online")
+      .like("callsign", "VT%");
 
+    /* =====================================
+       LANDED FLIGHTS (7d, Thailand only)
+    ===================================== */
     const { count: landed } = await db
       .from("pilot_sessions")
-      .select("*", {
-        count: "exact",
-        head: true
-      })
-      .gte("landed_at", week);
+      .select("*", { count: "exact", head: true })
+      .gte("connected_at", week)
+      .or("departure.like.VT%,arrival.like.VT%")
+      .not("landed_at", "is", null);
 
+    /* =====================================
+       MISSING FLIGHTS (7d, Thailand only)
+    ===================================== */
     const { count: missing } = await db
       .from("pilot_sessions")
-      .select("*", {
-        count: "exact",
-        head: true
-      })
+      .select("*", { count: "exact", head: true })
+      .gte("connected_at", week)
       .eq("status", "offline")
-      .is("landed_at", null);
+      .is("landed_at", null)
+      .or("departure.like.VT%,arrival.like.VT%");
 
+    /* =====================================
+       UPDATE CARDS
+    ===================================== */
     document.getElementById("dPilots").innerText =
       pilots || 0;
 
@@ -377,45 +381,62 @@ async function loadDashboard() {
 
     document.getElementById("lastUpdated").innerText =
       "Updated " +
-      new Date()
-        .toUTCString()
-        .split(" ")[4] +
+      new Date().toUTCString().split(" ")[4] +
       " UTC";
 
+    /* =====================================
+       TOP DEPARTURES (7d Thailand)
+    ===================================== */
     const { data: deps } = await db
       .from("pilot_sessions")
       .select("departure")
+      .gte("connected_at", week)
+      .like("departure", "VT%")
       .not("departure", "is", null)
       .limit(500);
 
     const depMap = {};
-    deps.forEach(x => {
+
+    (deps || []).forEach(x => {
       depMap[x.departure] =
         (depMap[x.departure] || 0) + 1;
     });
 
-    const depLabels = Object.keys(depMap).slice(0, 6);
-    const depData = depLabels.map(
-      x => depMap[x]
-    );
+    const depSorted = Object.entries(depMap)
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 6);
 
+    const depLabels = depSorted.map(x => x[0]);
+    const depData = depSorted.map(x => x[1]);
+
+    /* =====================================
+       TOP ARRIVALS (7d Thailand)
+    ===================================== */
     const { data: arrs } = await db
       .from("pilot_sessions")
       .select("arrival")
+      .gte("connected_at", week)
+      .like("arrival", "VT%")
       .not("arrival", "is", null)
       .limit(500);
 
     const arrMap = {};
-    arrs.forEach(x => {
+
+    (arrs || []).forEach(x => {
       arrMap[x.arrival] =
         (arrMap[x.arrival] || 0) + 1;
     });
 
-    const arrLabels = Object.keys(arrMap).slice(0, 6);
-    const arrData = arrLabels.map(
-      x => arrMap[x]
-    );
+    const arrSorted = Object.entries(arrMap)
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 6);
 
+    const arrLabels = arrSorted.map(x => x[0]);
+    const arrData = arrSorted.map(x => x[1]);
+
+    /* =====================================
+       REDRAW CHARTS
+    ===================================== */
     if (depChart) depChart.destroy();
     if (arrChart) arrChart.destroy();
 
@@ -470,8 +491,9 @@ async function loadDashboard() {
         }
       }
     );
+
   } catch (err) {
-    console.log(err);
+    console.log("Dashboard Error:", err);
   }
 }
 
