@@ -659,7 +659,7 @@ grid-template-columns:1fr;
 
 .snapshot-grid{
 display:grid;
-grid-template-columns:1fr 1.4fr;
+grid-template-columns: 36% 64%;
 gap:16px;
 margin-top:18px;
 }
