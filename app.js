@@ -176,121 +176,123 @@ function renderSearch(rows) {
   }
 
   wrap.innerHTML = `
-    <table class="pro-table">
-      <thead>
-        <tr>
-          <th>Callsign</th>
-          <th>Aircraft</th>
-          <th>VID</th>
-          <th>Route</th>
-          <th>Connected</th>
-          <th>Duration</th>
-          <th>Status</th>
-        </tr>
-      </thead>
-      <tbody>
-        ${rows.map(r => {
-          const connected = r.connected_at
-            ? new Date(r.connected_at).toISOString().replace("T"," ").slice(0,16)
-            : "-";
+<table class="pro-table">
+<thead>
+<tr>
+<th>Flight</th>
+<th>Route</th>
+<th>Connected</th>
+<th>Duration</th>
+<th>Status</th>
+</tr>
+</thead>
 
-          let duration = "-";
+<tbody>
+${rows.map(r => {
 
-          if (r.connected_at) {
-            const mins = Math.floor((Date.now() - new Date(r.connected_at)) / 60000);
-            const h = Math.floor(mins / 60);
-            const m = mins % 60;
-            duration = h + "h " + m + "m";
-          }
+const connected = r.connected_at
+ ? new Date(r.connected_at).toISOString().replace("T"," ").slice(0,16)
+ : "-";
 
-          return `
-            <tr>
-              <td>
-                <a href="https://tracker.ivao.aero/sessions/${r.session_id}"
-                   target="_blank"
-                   class="trk-link">
-                   ${r.callsign}
-                </a>
-              </td>
+let duration = "-";
 
-              <td>${r.aircraft_id || "-"}</td>
-              <td>${r.user_id || "-"}</td>
-              <td>${r.departure || "-"} → ${r.arrival || "-"}</td>
-              <td>${connected}</td>
-              <td>${duration}</td>
+if (r.connected_at) {
+ const mins = Math.floor((Date.now() - new Date(r.connected_at)) / 60000);
+ const h = Math.floor(mins / 60);
+ const m = mins % 60;
+ duration = h + "h " + m + "m";
+}
 
-              <td>
-                ${renderStatus(r)}
-               </td>
-            </tr>
-          `;
-        }).join("")}
-      </tbody>
-    </table>
-  `;
+return `
+<tr>
+
+<td>
+<div class="flight-box">
+
+<a href="https://tracker.ivao.aero/sessions/${r.session_id}"
+target="_blank"
+class="trk-link">
+${r.callsign}
+</a>
+
+<div class="subline">
+<span class="aircraft-chip">${r.aircraft_id || "-"}</span>
+<span class="vid-chip">VID ${r.user_id}</span>
+</div>
+
+</div>
+</td>
+
+<td>
+<div class="route-box">
+<span>${r.departure || "---"}</span>
+<span class="arrow">→</span>
+<span>${r.arrival || "---"}</span>
+</div>
+</td>
+
+<td>${connected}</td>
+
+<td>
+<span class="time-chip">${duration}</span>
+</td>
+
+<td>
+${renderStatus(r)}
+</td>
+
+</tr>
+`;
+
+}).join("")}
+</tbody>
+</table>
+`;
 }
 
 /* ===============================
    STATUS
 ================================= */
-function renderStatus(f){
+function renderStatus(f) {
 
-  const s = (f.last_state || "").toLowerCase();
+  const state = (f.last_state || "").trim().toLowerCase();
 
+  // 1. landed จริงจาก DB
   if (f.landed_at) {
     return '<span class="badge green">LANDED</span>';
   }
 
-  if (s.includes("taxi") || s.includes("ground")) {
-    return '<span class="badge green">LANDED</span>';
-  }
-
-  if (s.includes("final") || s.includes("approach")) {
-    return '<span class="badge yellow">APPROACH</span>';
-  }
-
-  if (s.includes("air") || s.includes("climb") || s.includes("cruise")) {
-    return '<span class="badge blue">ENROUTE</span>';
-  }
-
+  // 2. หลุดก่อน landed
   if (f.status === "offline") {
     return '<span class="badge red">MISSING</span>';
   }
 
-  return '<span class="badge blue">ONLINE</span>';
-}
-
-/* ===============================
-   CSV
-================================= */
-function exportCSV() {
-  if (!latestData.length) {
-    alert("No data.");
-    return;
+  // 3. ใช้ official IVAO state
+  if (state === "ground") {
+    return '<span class="badge blue">GROUND</span>';
   }
 
-  let csv =
-    "Callsign,VID,Departure,Arrival,Aircraft,Status\n";
+  if (state === "departing") {
+    return '<span class="badge blue">DEPARTING</span>';
+  }
 
-  latestData.forEach(f => {
-    csv += [
-      f.callsign,
-      f.user_id,
-      f.departure,
-      f.arrival,
-      f.aircraft_id,
-      f.status
-    ].join(",") + "\n";
-  });
+  if (state === "climbing") {
+    return '<span class="badge cyan">CLIMBING</span>';
+  }
 
-  const blob = new Blob([csv], {
-    type: "text/csv"
-  });
+  if (state === "en route") {
+    return '<span class="badge yellow">EN ROUTE</span>';
+  }
 
-  const a = document.createElement("a");
-  a.href = URL.createObjectURL(blob);
-  a.download = "ivao-search.csv";
-  a.click();
+  if (state === "approach") {
+    return '<span class="badge orange">APPROACH</span>';
+  }
+
+  if (state === "landed") {
+    return '<span class="badge green">LANDED</span>';
+  }
+
+  return '<span class="badge blue">ONLINE</span>';
 }
 
 /* ===============================
