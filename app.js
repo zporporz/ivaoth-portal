@@ -1,473 +1,493 @@
+/* ===============================
+   IVAO THAILAND PORTAL - APP.JS V2
+   Search + Statistics via Supabase
+================================= */
+
+const SUPABASE_URL =
+  "https://ifpseicrhxoujcykrigd.supabase.co";
+
+const SUPABASE_KEY =
+  "sb_publishable_49ThdVhLCpBBpga6LZtnNQ_HmhH2Emj";
+
+const supabase = window.supabase.createClient(
+  SUPABASE_URL,
+  SUPABASE_KEY
+);
+
 let latestData = [];
+let depChart = null;
+let arrChart = null;
 
-function toggleMode(){
+/* ===============================
+   UI MODE
+================================= */
+function toggleMode() {
+  const on = document.getElementById("modeSwitch").checked;
 
-const on = document.getElementById("modeSwitch").checked;
+  document.getElementById("airportWrap").style.display =
+    on ? "block" : "none";
 
-if(on){
-document.getElementById("airportWrap").style.display = "block";
-document.getElementById("depWrap").style.display = "none";
-document.getElementById("arrWrap").style.display = "none";
-document.getElementById("bidiWrap").style.display = "none";
-}else{
-document.getElementById("airportWrap").style.display = "none";
-document.getElementById("depWrap").style.display = "block";
-document.getElementById("arrWrap").style.display = "block";
-document.getElementById("bidiWrap").style.display = "flex";
-}
+  document.getElementById("depWrap").style.display =
+    on ? "none" : "block";
 
+  document.getElementById("arrWrap").style.display =
+    on ? "none" : "block";
+
+  document.getElementById("bidiWrap").style.display =
+    on ? "none" : "flex";
 }
 
 toggleMode();
 
-function resetForm(){
+/* ===============================
+   RESET
+================================= */
+function resetForm() {
+  [
+    "airportCodes",
+    "dep",
+    "arr",
+    "fromDate",
+    "fromTime",
+    "toDate",
+    "toTime"
+  ].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.value = "";
+  });
 
-[
-"airportCodes",
-"dep",
-"arr",
-"fromDate",
-"fromTime",
-"toDate",
-"toTime"
-].forEach(id=>{
-const el = document.getElementById(id);
-if(el) el.value = "";
-});
+  latestData = [];
 
-latestData = [];
+  document.getElementById("results").innerHTML = "";
+  document.getElementById("resultSection").style.display = "none";
 
-document.getElementById("results").innerHTML = "";
-document.getElementById("resultSection").style.display = "none";
-
-document.getElementById("statFlights").innerText = "0";
-document.getElementById("statPilots").innerText = "0";
-document.getElementById("statDep").innerText = "-";
-document.getElementById("statArr").innerText = "-";
-
+  document.getElementById("statFlights").innerText = "0";
+  document.getElementById("statPilots").innerText = "0";
+  document.getElementById("statDep").innerText = "-";
+  document.getElementById("statArr").innerText = "-";
 }
 
-async function searchFlights(){
+/* ===============================
+   SEARCH FLIGHTS
+================================= */
+async function searchFlights() {
+  const results = document.getElementById("results");
 
-const results = document.getElementById("results");
+  results.innerHTML =
+    '<div class="msg">Searching database...</div>';
 
-results.innerHTML =
-'<div class="msg">Searching database...</div>';
+  document.getElementById("resultSection").style.display =
+    "block";
 
-const modeOn = document.getElementById("modeSwitch").checked;
+  const fromDate =
+    document.getElementById("fromDate").value;
 
-const fromDate = document.getElementById("fromDate").value;
-const fromTime = document.getElementById("fromTime").value;
-const toDate = document.getElementById("toDate").value;
-const toTime = document.getElementById("toTime").value;
+  const fromTime =
+    document.getElementById("fromTime").value;
 
-if(!fromDate || !fromTime || !toDate || !toTime){
-results.innerHTML =
-'<div class="msg">Complete date/time first.</div>';
-return;
+  const toDate =
+    document.getElementById("toDate").value;
+
+  const toTime =
+    document.getElementById("toTime").value;
+
+  if (!fromDate || !fromTime || !toDate || !toTime) {
+    results.innerHTML =
+      '<div class="msg">Complete date/time first.</div>';
+    return;
+  }
+
+  const from = `${fromDate}T${fromTime}:00Z`;
+  const to = `${toDate}T${toTime}:59Z`;
+
+  try {
+    let query = supabase
+      .from("pilot_sessions")
+      .select("*")
+      .gte("connected_at", from)
+      .lte("connected_at", to)
+      .order("connected_at", { ascending: false })
+      .limit(500);
+
+    const modeOn =
+      document.getElementById("modeSwitch").checked;
+
+    if (modeOn) {
+      const airports = document
+        .getElementById("airportCodes")
+        .value.toUpperCase()
+        .split(",")
+        .map(x => x.trim())
+        .filter(Boolean);
+
+      if (airports.length === 0) {
+        results.innerHTML =
+          '<div class="msg">Enter airport ICAOs.</div>';
+        return;
+      }
+
+      query = query.or(
+        airports
+          .map(
+            x =>
+              `departure.eq.${x},arrival.eq.${x}`
+          )
+          .join(",")
+      );
+    } else {
+      const dep = document
+        .getElementById("dep")
+        .value.trim()
+        .toUpperCase();
+
+      const arr = document
+        .getElementById("arr")
+        .value.trim()
+        .toUpperCase();
+
+      if (dep) query = query.eq("departure", dep);
+      if (arr) query = query.eq("arrival", arr);
+    }
+
+    const { data, error } = await query;
+
+    if (error) throw error;
+
+    latestData = data || [];
+
+    renderSearch(latestData);
+  } catch (err) {
+    console.log(err);
+
+    results.innerHTML =
+      '<div class="msg">Database query failed.</div>';
+  }
 }
 
-document.getElementById("resultSection").style.display = "block";
+/* ===============================
+   RENDER SEARCH
+================================= */
+function renderSearch(rows) {
+  const results = document.getElementById("results");
 
-const from = `${fromDate}T${fromTime}:00.000Z`;
-const to   = `${toDate}T${toTime}:59.000Z`;
+  document.getElementById("statFlights").innerText =
+    rows.length;
 
-let allData = [];
+  document.getElementById("statPilots").innerText =
+    new Set(rows.map(x => x.user_id)).size;
 
-try{
+  document.getElementById("statDep").innerText =
+    rows[0]?.departure || "-";
 
-if(modeOn){
+  document.getElementById("statArr").innerText =
+    rows[0]?.arrival || "-";
 
-const airports = document.getElementById("airportCodes").value
-.toUpperCase()
-.split(",")
-.map(x=>x.trim())
-.filter(Boolean);
+  if (rows.length === 0) {
+    results.innerHTML =
+      '<div class="msg">No flights detected.</div>';
+    return;
+  }
 
-if(airports.length===0){
-results.innerHTML =
-'<div class="msg">Enter airport ICAOs.</div>';
-return;
+  let html = `
+  <table>
+  <tr>
+    <th>Callsign</th>
+    <th>Aircraft</th>
+    <th>VID</th>
+    <th>Route</th>
+    <th>Status</th>
+  </tr>
+  `;
+
+  rows.forEach(f => {
+    html += `
+    <tr>
+      <td>${f.callsign || "-"}</td>
+      <td>${f.aircraft_id || "-"}</td>
+      <td>${f.user_id || "-"}</td>
+      <td>${f.departure || "-"} → ${f.arrival || "-"}</td>
+      <td>${renderStatus(f)}</td>
+    </tr>
+    `;
+  });
+
+  html += `</table>`;
+
+  results.innerHTML = html;
 }
 
-for(const code of airports){
+/* ===============================
+   STATUS
+================================= */
+function renderStatus(f) {
+  if (f.landed_at)
+    return '<span class="badge green">Landed</span>';
 
-const r1 = await fetch(
-`https://ivaoth-bot.fly.dev/api/search?dep=${code}&from=${encodeURIComponent(from)}&to=${encodeURIComponent(to)}`
-);
-const d1 = await r1.json();
+  if (f.status === "offline")
+    return '<span class="badge red">Offline</span>';
 
-const r2 = await fetch(
-`https://ivaoth-bot.fly.dev/api/search?arr=${code}&from=${encodeURIComponent(from)}&to=${encodeURIComponent(to)}`
-);
-const d2 = await r2.json();
+  const s =
+    (f.last_state || "").toLowerCase();
 
-allData = allData.concat(d1,d2);
+  if (s.includes("air"))
+    return '<span class="badge yellow">Enroute</span>';
 
+  if (s.includes("taxi"))
+    return '<span class="badge blue">Taxi</span>';
+
+  return '<span class="badge blue">Online</span>';
 }
 
-}else{
+/* ===============================
+   CSV
+================================= */
+function exportCSV() {
+  if (!latestData.length) {
+    alert("No data.");
+    return;
+  }
 
-const dep = document.getElementById("dep").value.trim().toUpperCase();
-const arr = document.getElementById("arr").value.trim().toUpperCase();
+  let csv =
+    "Callsign,VID,Departure,Arrival,Aircraft,Status\n";
 
-if(!dep && !arr){
-results.innerHTML =
-'<div class="msg">Enter departure or arrival ICAO.</div>';
-return;
+  latestData.forEach(f => {
+    csv += [
+      f.callsign,
+      f.user_id,
+      f.departure,
+      f.arrival,
+      f.aircraft_id,
+      f.status
+    ].join(",") + "\n";
+  });
+
+  const blob = new Blob([csv], {
+    type: "text/csv"
+  });
+
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = "ivao-search.csv";
+  a.click();
 }
 
-const r = await fetch(
-`https://ivaoth-bot.fly.dev/api/search?dep=${dep}&arr=${arr}&from=${encodeURIComponent(from)}&to=${encodeURIComponent(to)}`
-);
-
-allData = await r.json();
-
-if(document.getElementById("bidirectional").checked && dep && arr){
-
-const r2 = await fetch(
-`https://ivaoth-bot.fly.dev/api/search?dep=${arr}&arr=${dep}&from=${encodeURIComponent(from)}&to=${encodeURIComponent(to)}`
-);
-
-const d2 = await r2.json();
-
-allData = allData.concat(d2);
-
-}
-
-}
-
-/* remove duplicates */
-const map = new Map();
-allData.forEach(x => map.set(x.track_id, x));
-allData = [...map.values()];
-
-latestData = allData;
-
-document.getElementById("statFlights").innerText = allData.length;
-document.getElementById("statPilots").innerText =
-new Set(allData.map(x=>x.vid)).size;
-
-document.getElementById("statDep").innerText =
-allData[0]?.dep || "-";
-
-document.getElementById("statArr").innerText =
-allData[0]?.arr || "-";
-
-if(allData.length===0){
-results.innerHTML =
-'<div class="msg">No flights detected.</div>';
-return;
-}
-
-let html = `
-<table>
-<tr>
-<th>Callsign</th>
-<th>Aircraft</th>
-<th>VID</th>
-<th>Route</th>
-<th>Status</th>
-<th>Track</th>
-</tr>
-`;
-
-allData.forEach(f=>{
-
-html += `
-<tr>
-<td>${f.callsign}</td>
-<td>${f.aircraft}</td>
-<td>${f.vid}</td>
-<td>${f.dep} → ${f.arr}</td>
-<td>${renderStatus(f)}</td>
-<td>
-<a class="track"
-href="https://tracker.ivao.aero/sessions/${f.track_id}"
-target="_blank">
-#${f.track_id}
-</a>
-</td>
-</tr>
-`;
-
-});
-
-html += `</table>`;
-
-results.innerHTML = html;
-
-}catch(e){
-
-results.innerHTML =
-'<div class="msg">API connection failed.</div>';
-
-}
-
-}
-
-function exportCSV(){
-
-if(latestData.length === 0){
-alert("No data to export.");
-return;
-}
-
-let csv =
-"Track ID,Callsign,VID,Departure,Arrival,Aircraft,Status,Search Time UTC\n";
-
-latestData.forEach(f=>{
-
-csv += [
-cleanCSV(f.track_id || ""),
-cleanCSV(f.callsign || ""),
-cleanCSV(f.vid || ""),
-cleanCSV(f.dep || ""),
-cleanCSV(f.arr || ""),
-cleanCSV(f.aircraft || ""),
-cleanCSV(getStatusText(f)),
-cleanCSV(f.time || "")
-].join(",") + "\n";
-
-});
-
-const blob = new Blob([csv], {
-type:"text/csv;charset=utf-8;"
-});
-
-const url = URL.createObjectURL(blob);
-
-const a = document.createElement("a");
-a.href = url;
-
-const now = new Date();
-
-a.download =
-`ivao-search-${now.getUTCFullYear()}-${
-String(now.getUTCMonth()+1).padStart(2,"0")
-}-${
-String(now.getUTCDate()).padStart(2,"0")
-}.csv`;
-
-a.click();
-
-URL.revokeObjectURL(url);
-
-}
-
-function cleanCSV(value){
-return `"${String(value).replace(/"/g,'""')}"`;
-}
-
-function getStatusText(f){
-
-const status = (f.status || "").toLowerCase();
-
-if(f.landed_at){
-return "Landed";
-}
-
-if(status === "offline"){
-return "Missing";
-}
-
-const state = (f.last_state || "").toLowerCase();
-
-if(state.includes("route")) return "Enroute";
-if(state.includes("approach")) return "Approach";
-if(state.includes("boarding")) return "Boarding";
-if(state.includes("taxi")) return "Taxiing";
-if(state.includes("push")) return "Pushback";
-if(state.includes("block")) return "On Blocks";
-
-if(f.last_state) return f.last_state;
-
-return "Online";
-
-}
-
-function renderStatus(f){
-
-const status = (f.status || "").toLowerCase();
-
-if(f.landed_at){
-return '<span class="badge green">Landed</span>';
-}
-
-if(status === "offline"){
-return '<span class="badge red">Missing</span>';
-}
-
-const state = (f.last_state || "").toLowerCase();
-
-if(state.includes("route")){
-return '<span class="badge yellow">Enroute</span>';
-}
-
-if(state.includes("approach")){
-return '<span class="badge yellow">Approach</span>';
-}
-
-if(state.includes("boarding")){
-return '<span class="badge blue">Boarding</span>';
-}
-
-if(state.includes("taxi")){
-return '<span class="badge blue">Taxiing</span>';
-}
-
-if(state.includes("push")){
-return '<span class="badge blue">Pushback</span>';
-}
-
-if(state.includes("block")){
-return '<span class="badge blue">On Blocks</span>';
-}
-
-if(f.last_state){
-return `<span class="badge blue">${f.last_state}</span>`;
-}
-
-return '<span class="badge blue">Online</span>';
-
-}
-
-function goToSection(id){
-
-const el = document.getElementById(id);
-
-if(el){
-history.replaceState(null, null, "#" + id);
-el.scrollIntoView({
-behavior:"smooth",
-block:"start"
-});
-}
-
-}
-
-let depChart = null;
-let arrChart = null;
-
+/* ===============================
+   DASHBOARD
+================================= */
 const centerTextPlugin = {
-id: "centerTextPlugin",
-beforeDraw(chart) {
+  id: "centerTextPlugin",
+  beforeDraw(chart) {
+    const meta = chart.getDatasetMeta(0);
+    if (!meta.data.length) return;
 
-const meta = chart.getDatasetMeta(0);
-if (!meta.data.length) return;
+    const { ctx } = chart;
+    const x = meta.data[0].x;
+    const y = meta.data[0].y;
 
-const { ctx } = chart;
-const x = meta.data[0].x;
-const y = meta.data[0].y;
+    const total =
+      chart.data.datasets[0].data.reduce(
+        (a, b) => a + b,
+        0
+      );
 
-const total =
-chart.data.datasets[0].data.reduce((a,b)=>a+b,0);
-
-ctx.save();
-ctx.textAlign = "center";
-ctx.textBaseline = "middle";
-
-ctx.fillStyle = "#ffffff";
-ctx.font = "bold 28px Inter";
-ctx.fillText(total, x, y - 8);
-
-ctx.fillStyle = "#8ea7cc";
-ctx.font = "14px Inter";
-ctx.fillText("Total", x, y + 18);
-
-ctx.restore();
-}
+    ctx.save();
+    ctx.textAlign = "center";
+    ctx.fillStyle = "#fff";
+    ctx.font = "bold 28px Inter";
+    ctx.fillText(total, x, y);
+    ctx.restore();
+  }
 };
 
-async function loadDashboard(){
+async function loadDashboard() {
+  try {
+    /* online pilots */
+    const { count: pilots } = await supabase
+      .from("pilot_sessions")
+      .select("*", {
+        count: "exact",
+        head: true
+      })
+      .eq("status", "online");
 
-try{
+    /* online atc */
+    const { count: atc } = await supabase
+      .from("atc_sessions")
+      .select("*", {
+        count: "exact",
+        head: true
+      })
+      .eq("status", "online");
 
-const res = await fetch(
-"https://ivaoth-bot.fly.dev/api/dashboard"
-);
+    /* landed 7d */
+    const week =
+      new Date(
+        Date.now() - 7 * 86400000
+      ).toISOString();
 
-const data = await res.json();
+    const { count: landed } = await supabase
+      .from("pilot_sessions")
+      .select("*", {
+        count: "exact",
+        head: true
+      })
+      .gte("landed_at", week);
 
-document.getElementById("dPilots").innerText = data.pilots_online;
-document.getElementById("dAtc").innerText = data.atc_online;
-document.getElementById("dLanded").innerText = data.landed;
-document.getElementById("dMissing").innerText = data.missing;
-document.getElementById("lastUpdated").innerText =
-"Updated " + new Date().toUTCString().split(" ")[4] + " UTC";
+    /* missing */
+    const { count: missing } = await supabase
+      .from("pilot_sessions")
+      .select("*", {
+        count: "exact",
+        head: true
+      })
+      .eq("status", "offline")
+      .is("landed_at", null);
 
-if(depChart) depChart.destroy();
-if(arrChart) arrChart.destroy();
+    document.getElementById("dPilots").innerText =
+      pilots || 0;
 
-depChart = new Chart(document.getElementById("topDeps"), {
-type:"doughnut",
-data:{
-labels:data.top_departures.map(x=>x.icao),
-datasets:[{
-data:data.top_departures.map(x=>x.count),
-borderWidth:0
-}]
-},
-plugins:[centerTextPlugin],
-options:{
-plugins:{
-legend:{
-position:"bottom",
-labels:{color:"#dfe8ff"}
+    document.getElementById("dAtc").innerText =
+      atc || 0;
+
+    document.getElementById("dLanded").innerText =
+      landed || 0;
+
+    document.getElementById("dMissing").innerText =
+      missing || 0;
+
+    document.getElementById("lastUpdated").innerText =
+      "Updated " +
+      new Date()
+        .toUTCString()
+        .split(" ")[4] +
+      " UTC";
+
+    /* top deps */
+    const { data: deps } = await supabase
+      .from("pilot_sessions")
+      .select("departure")
+      .not("departure", "is", null)
+      .limit(500);
+
+    const depMap = {};
+    deps.forEach(x => {
+      depMap[x.departure] =
+        (depMap[x.departure] || 0) + 1;
+    });
+
+    const depLabels = Object.keys(depMap).slice(0, 6);
+    const depData = depLabels.map(
+      x => depMap[x]
+    );
+
+    /* top arr */
+    const { data: arrs } = await supabase
+      .from("pilot_sessions")
+      .select("arrival")
+      .not("arrival", "is", null)
+      .limit(500);
+
+    const arrMap = {};
+    arrs.forEach(x => {
+      arrMap[x.arrival] =
+        (arrMap[x.arrival] || 0) + 1;
+    });
+
+    const arrLabels = Object.keys(arrMap).slice(0, 6);
+    const arrData = arrLabels.map(
+      x => arrMap[x]
+    );
+
+    if (depChart) depChart.destroy();
+    if (arrChart) arrChart.destroy();
+
+    depChart = new Chart(
+      document.getElementById("topDeps"),
+      {
+        type: "doughnut",
+        data: {
+          labels: depLabels,
+          datasets: [
+            {
+              data: depData,
+              borderWidth: 0
+            }
+          ]
+        },
+        plugins: [centerTextPlugin],
+        options: {
+          cutout: "68%",
+          plugins: {
+            legend: {
+              position: "bottom",
+              labels: { color: "#fff" }
+            }
+          }
+        }
+      }
+    );
+
+    arrChart = new Chart(
+      document.getElementById("topArrs"),
+      {
+        type: "doughnut",
+        data: {
+          labels: arrLabels,
+          datasets: [
+            {
+              data: arrData,
+              borderWidth: 0
+            }
+          ]
+        },
+        plugins: [centerTextPlugin],
+        options: {
+          cutout: "68%",
+          plugins: {
+            legend: {
+              position: "bottom",
+              labels: { color: "#fff" }
+            }
+          }
+        }
+      }
+    );
+  } catch (err) {
+    console.log(err);
+  }
 }
-},
-cutout:"68%"
-}
-});
 
-arrChart = new Chart(document.getElementById("topArrs"), {
-type:"doughnut",
-data:{
-labels:data.top_arrivals.map(x=>x.icao),
-datasets:[{
-data:data.top_arrivals.map(x=>x.count),
-borderWidth:0
-}]
-},
-plugins:[centerTextPlugin],
-options:{
-responsive:true,
-maintainAspectRatio:true,
-aspectRatio:1,
-plugins:{
-legend:{
-position:"bottom",
-labels:{color:"#dfe8ff"}
-}
-},
-cutout:"68%"
-}
-});
+/* ===============================
+   NAV
+================================= */
+function goToSection(id) {
+  const el =
+    document.getElementById(id);
 
-}catch(err){
-console.log(err);
+  if (el)
+    el.scrollIntoView({
+      behavior: "smooth"
+    });
 }
-
-}
-
-loadDashboard();
 
 window.addEventListener("scroll", () => {
-const btn = document.getElementById("topBtn");
+  const btn =
+    document.getElementById("topBtn");
 
-if(window.scrollY > 400){
-btn.classList.add("show");
-}else{
-btn.classList.remove("show");
-}
+  if (window.scrollY > 400)
+    btn.classList.add("show");
+  else btn.classList.remove("show");
 });
 
-function scrollToTop(){
-window.scrollTo({
-top:0,
-behavior:"smooth"
-});
+function scrollToTop() {
+  window.scrollTo({
+    top: 0,
+    behavior: "smooth"
+  });
 }
 
+/* ===============================
+   START
+================================= */
 loadDashboard();
-setInterval(loadDashboard,300000);
+setInterval(loadDashboard, 300000);
