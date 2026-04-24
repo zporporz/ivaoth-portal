@@ -538,3 +538,60 @@ window.resetForm = resetForm;
 window.toggleMode = toggleMode;
 window.goToSection = goToSection;
 window.scrollToTop = scrollToTop;
+
+function exportCSV() {
+  if (!latestData || !latestData.length) {
+    alert("No search results to export.");
+    return;
+  }
+
+  const rows = [[
+    "Callsign",
+    "VID",
+    "Aircraft",
+    "Departure",
+    "Arrival",
+    "Connected",
+    "Departed",
+    "Landed",
+    "Status",
+    "State"
+  ]];
+
+  latestData.forEach(f => {
+    rows.push([
+      f.callsign || "",
+      f.user_id || "",
+      f.aircraft_id || "",
+      f.departure || "",
+      f.arrival || "",
+      f.connected_at || "",
+      f.departed_at || "",
+      f.landed_at || "",
+      f.status || "",
+      f.last_state || ""
+    ]);
+  });
+
+  const csv = rows.map(r =>
+    r.map(v => `"${String(v).replace(/"/g, '""')}"`).join(",")
+  ).join("\n");
+
+  const blob = new Blob([csv], {
+    type: "text/csv;charset=utf-8;"
+  });
+
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+
+  a.href = url;
+  a.download =
+    "ivao-search-" +
+    new Date().toISOString().slice(0,19).replace(/:/g,"-") +
+    ".csv";
+
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
