@@ -769,7 +769,6 @@ async function loadTrafficTrend() {
       .select("connected_at,departure,arrival")
       .gte("connected_at", last24)
       .or("departure.like.VT%,arrival.like.VT%")
-      .gte("connected_at", last24)
       .limit(3000);
 
     if (error) throw error;
@@ -777,12 +776,9 @@ async function loadTrafficTrend() {
     const buckets = Array(24).fill(0);
 
     (data || []).forEach(row => {
-
       const d = new Date(row.connected_at);
       const h = d.getUTCHours();
-
       buckets[h]++;
-
     });
 
     const labels = [
@@ -792,41 +788,110 @@ async function loadTrafficTrend() {
       "18Z","19Z","20Z","21Z","22Z","23Z"
     ];
 
+    const peak = Math.max(...buckets);
+
     if (trendChart) trendChart.destroy();
 
-    trendChart = new Chart(
-      document.getElementById("trendChart"),
-      {
-        type:"line",
-        data:{
-          labels:labels,
-          datasets:[{
-            data:buckets,
-            tension:.35,
-            fill:true,
-            borderWidth:3,
-            pointRadius:2
-          }]
-        },
-        options:{
-          responsive:true,
-          plugins:{
-            legend:{ display:false }
-          },
-          scales:{
-            x:{
-              ticks:{ color:"#9db5d8" },
-              grid:{ color:"rgba(255,255,255,.03)" }
-            },
-            y:{
-              beginAtZero:true,
-              ticks:{ color:"#9db5d8" },
-              grid:{ color:"rgba(255,255,255,.03)" }
+    const canvas =
+      document.getElementById("trendChart");
+
+    const ctx = canvas.getContext("2d");
+
+    const gradient =
+      ctx.createLinearGradient(0, 0, 0, 420);
+
+    gradient.addColorStop(0, "rgba(0,255,255,.45)");
+    gradient.addColorStop(.35, "rgba(0,140,255,.28)");
+    gradient.addColorStop(.7, "rgba(140,0,255,.12)");
+    gradient.addColorStop(1, "rgba(0,0,0,0)");
+
+    trendChart = new Chart(canvas, {
+      type: "line",
+
+      data: {
+        labels: labels,
+
+        datasets: [{
+          data: buckets,
+
+          borderColor: "#00eaff",
+          backgroundColor: gradient,
+
+          fill: true,
+          tension: .42,
+          borderWidth: 4,
+
+          pointRadius: buckets.map(v =>
+            v === peak ? 6 : 3
+          ),
+
+          pointHoverRadius: 7,
+
+          pointBackgroundColor: buckets.map(v =>
+            v === peak
+              ? "#ffd54f"
+              : "#7cf7ff"
+          ),
+
+          pointBorderColor: buckets.map(v =>
+            v === peak
+              ? "#ffffff"
+              : "#00eaff"
+          ),
+
+          pointBorderWidth: 2
+        }]
+      },
+
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            backgroundColor: "#091224",
+            borderColor: "#00eaff",
+            borderWidth: 1,
+            titleColor: "#ffffff",
+            bodyColor: "#9fe8ff",
+            padding: 12,
+            displayColors: false,
+            callbacks: {
+              label: function(ctx) {
+                return ctx.raw + " flights";
+              }
             }
           }
+        },
+
+        scales: {
+          x: {
+            ticks: {
+              color: "#9db5d8"
+            },
+            grid: {
+              color: "rgba(255,255,255,.035)"
+            }
+          },
+
+          y: {
+            beginAtZero: true,
+            ticks: {
+              color: "#9db5d8"
+            },
+            grid: {
+              color: "rgba(255,255,255,.04)"
+            }
+          }
+        },
+
+        interaction: {
+          intersect: false,
+          mode: "index"
         }
       }
-    );
+    });
 
   } catch(err) {
     console.log("Trend Error:", err);
