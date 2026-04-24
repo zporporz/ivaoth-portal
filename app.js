@@ -735,7 +735,7 @@ async function loadTopAirlines() {
     const top =
       Object.entries(map)
       .sort((a,b)=>b[1]-a[1])
-      .slice(0,8);
+      .slice(0,5);
 
     const wrap =
       document.getElementById("topAirlinesList");
