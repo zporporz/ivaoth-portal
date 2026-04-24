@@ -206,7 +206,7 @@ function renderSearch(rows) {
           return `
             <tr>
               <td>
-                <a href="https://tracker.ivao.aero/session/${r.session_id}"
+                <a href="https://tracker.ivao.aero/sessions/${r.session_id}"
                    target="_blank"
                    class="trk-link">
                    ${r.callsign}
