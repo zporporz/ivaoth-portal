@@ -1,5 +1,5 @@
 /* ===============================
-   IVAO THAILAND PORTAL - APP.JS V2
+   IVAO THAILAND PORTAL - APP.JS FINAL
    Search + Statistics via Supabase
 ================================= */
 
@@ -9,7 +9,7 @@ const SUPABASE_URL =
 const SUPABASE_KEY =
   "sb_publishable_49ThdVhLCpBBpga6LZtnNQ_HmhH2Emj";
 
-const supabase = window.supabase.createClient(
+const db = window.supabase.createClient(
   SUPABASE_URL,
   SUPABASE_KEY
 );
@@ -101,7 +101,7 @@ async function searchFlights() {
   const to = `${toDate}T${toTime}:59Z`;
 
   try {
-    let query = supabase
+    let query = db
       .from("pilot_sessions")
       .select("*")
       .gte("connected_at", from)
@@ -301,8 +301,12 @@ const centerTextPlugin = {
 
 async function loadDashboard() {
   try {
-    /* online pilots */
-    const { count: pilots } = await supabase
+    const week =
+      new Date(
+        Date.now() - 7 * 86400000
+      ).toISOString();
+
+    const { count: pilots } = await db
       .from("pilot_sessions")
       .select("*", {
         count: "exact",
@@ -310,8 +314,7 @@ async function loadDashboard() {
       })
       .eq("status", "online");
 
-    /* online atc */
-    const { count: atc } = await supabase
+    const { count: atc } = await db
       .from("atc_sessions")
       .select("*", {
         count: "exact",
@@ -319,13 +322,7 @@ async function loadDashboard() {
       })
       .eq("status", "online");
 
-    /* landed 7d */
-    const week =
-      new Date(
-        Date.now() - 7 * 86400000
-      ).toISOString();
-
-    const { count: landed } = await supabase
+    const { count: landed } = await db
       .from("pilot_sessions")
       .select("*", {
         count: "exact",
@@ -333,8 +330,7 @@ async function loadDashboard() {
       })
       .gte("landed_at", week);
 
-    /* missing */
-    const { count: missing } = await supabase
+    const { count: missing } = await db
       .from("pilot_sessions")
       .select("*", {
         count: "exact",
@@ -362,8 +358,7 @@ async function loadDashboard() {
         .split(" ")[4] +
       " UTC";
 
-    /* top deps */
-    const { data: deps } = await supabase
+    const { data: deps } = await db
       .from("pilot_sessions")
       .select("departure")
       .not("departure", "is", null)
@@ -380,8 +375,7 @@ async function loadDashboard() {
       x => depMap[x]
     );
 
-    /* top arr */
-    const { data: arrs } = await supabase
+    const { data: arrs } = await db
       .from("pilot_sessions")
       .select("arrival")
       .not("arrival", "is", null)
