@@ -103,12 +103,12 @@ async function searchFlights() {
   try {
     let query = db
       .from("pilot_sessions")
-      .select("*")
+      .select("session_id,user_id,callsign,aircraft_id,departure,arrival,connected_at,departed_at,landed_at,status,last_state")
       .gte("connected_at", from)
       .or("departure.like.VT%,arrival.like.VT%")
       .lte("connected_at", to)
       .order("connected_at", { ascending: false })
-      .limit(500);
+      .limit(250);
 
     const modeOn =
       document.getElementById("modeSwitch").checked;
@@ -452,7 +452,7 @@ async function loadDashboard() {
       .gte("connected_at", week)
       .like("departure", "VT%")
       .not("departure", "is", null)
-      .limit(500);
+      .limit(200);
 
     const depMap = {};
 
@@ -709,7 +709,7 @@ async function loadTopAirlines() {
       .gte("connected_at", week)
       .or("departure.like.VT%,arrival.like.VT%")
       .not("callsign", "is", null)
-      .limit(2000);
+      .limit(100);
 
     if (error) throw error;
 
@@ -774,7 +774,7 @@ async function loadTrafficTrend() {
       .select("connected_at,departure,arrival")
       .gte("connected_at", last24)
       .or("departure.like.VT%,arrival.like.VT%")
-      .limit(3000);
+      .limit(1000);
 
     if (error) throw error;
 
@@ -909,8 +909,8 @@ async function loadTrafficTrend() {
 loadDashboard();
 loadSnapshot();
 
-setInterval(loadDashboard, 300000);
-setInterval(loadSnapshot, 300000);
+setInterval(loadDashboard, 600000);
+setInterval(loadSnapshot, 600000);
 
 window.searchFlights = searchFlights;
 window.exportCSV = exportCSV;
