@@ -491,3 +491,10 @@ function scrollToTop() {
 ================================= */
 loadDashboard();
 setInterval(loadDashboard, 300000);
+
+window.searchFlights = searchFlights;
+window.exportCSV = exportCSV;
+window.resetForm = resetForm;
+window.toggleMode = toggleMode;
+window.goToSection = goToSection;
+window.scrollToTop = scrollToTop;
