@@ -700,8 +700,9 @@ async function loadTopAirlines() {
 
     const { data, error } = await db
       .from("pilot_sessions")
-      .select("callsign")
+      .select("callsign,departure,arrival")
       .gte("connected_at", week)
+      .or("departure.like.VT%,arrival.like.VT%")
       .not("callsign", "is", null)
       .limit(2000);
 
@@ -765,7 +766,9 @@ async function loadTrafficTrend() {
 
     const { data, error } = await db
       .from("pilot_sessions")
-      .select("connected_at")
+      .select("connected_at,departure,arrival")
+      .gte("connected_at", last24)
+      .or("departure.like.VT%,arrival.like.VT%")
       .gte("connected_at", last24)
       .limit(3000);
 
