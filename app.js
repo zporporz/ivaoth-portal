@@ -220,10 +220,8 @@ function renderSearch(rows) {
               <td>${duration}</td>
 
               <td>
-                <span class="badge ${r.status === "online" ? "on" : "off"}">
-                  ${r.status}
-                </span>
-              </td>
+                ${renderStatus(r)}
+               </td>
             </tr>
           `;
         }).join("")}
@@ -236,20 +234,27 @@ function renderSearch(rows) {
    STATUS
 ================================= */
 function renderStatus(f) {
-  if (f.landed_at)
+  const s = (f.last_state || "").toLowerCase();
+
+  if (f.landed_at) {
     return '<span class="badge green">Landed</span>';
+  }
 
-  if (f.status === "offline")
-    return '<span class="badge red">Offline</span>';
+  if (f.status === "offline") {
+    return '<span class="badge missing">Missing</span>';
+  }
 
-  const s =
-    (f.last_state || "").toLowerCase();
+  if (s.includes("approach") || s.includes("final")) {
+    return '<span class="badge yellow">Approach</span>';
+  }
 
-  if (s.includes("air"))
+  if (s.includes("air") || s.includes("climb") || s.includes("cruise")) {
     return '<span class="badge yellow">Enroute</span>';
+  }
 
-  if (s.includes("taxi"))
+  if (s.includes("taxi") || s.includes("ground")) {
     return '<span class="badge blue">Taxi</span>';
+  }
 
   return '<span class="badge blue">Online</span>';
 }

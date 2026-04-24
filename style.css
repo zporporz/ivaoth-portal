@@ -508,3 +508,9 @@ color:#63ff97;
 background:#3d1d28;
 color:#ff7b9c;
 }
+
+.badge.missing{
+background:rgba(255,93,108,.18);
+color:#ff6b7f;
+border:1px solid rgba(255,93,108,.35);
+}
