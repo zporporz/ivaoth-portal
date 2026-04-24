@@ -103,8 +103,9 @@ async function searchFlights() {
   try {
     let query = db
       .from("pilot_sessions")
-      .select("*")
+      .select("callsign,departure,arrival")
       .gte("connected_at", from)
+      .or("departure.like.VT%,arrival.like.VT%")
       .lte("connected_at", to)
       .order("connected_at", { ascending: false })
       .limit(500);
