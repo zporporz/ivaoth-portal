@@ -634,3 +634,55 @@ grid-template-columns:1fr;
 }
 
 }
+
+
+.snapshot-grid{
+display:grid;
+grid-template-columns:1fr 1.4fr;
+gap:16px;
+margin-top:18px;
+}
+
+.airline-list{
+margin-top:14px;
+display:flex;
+flex-direction:column;
+gap:10px;
+}
+
+.airline-row{
+display:grid;
+grid-template-columns:40px 1fr auto;
+gap:12px;
+align-items:center;
+padding:10px 12px;
+border-radius:14px;
+background:rgba(255,255,255,.02);
+border:1px solid rgba(255,255,255,.04);
+}
+
+.airline-rank{
+font-weight:800;
+color:#6ea8ff;
+font-size:15px;
+}
+
+.airline-code{
+font-weight:700;
+font-size:15px;
+color:#fff;
+letter-spacing:.4px;
+}
+
+.airline-count{
+font-weight:800;
+color:#9fd0ff;
+}
+
+@media(max-width:900px){
+
+.snapshot-grid{
+grid-template-columns:1fr;
+}
+
+}

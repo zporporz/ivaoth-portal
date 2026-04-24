@@ -34,7 +34,7 @@ Ecgkasit B. 739898
 <div class="nav">
 <a href="javascript:void(0)" class="active" onclick="goToSection('searchSection')">Search Flights</a>
 <a href="javascript:void(0)" onclick="goToSection('liveSection')">Live Board</a>
-<a href="javascript:void(0)" onclick="goToSection('airportSection')">Airports</a>
+<a href="javascript:void(0)" onclick="goToSection('airportSection')">Insights</a>
 <a href="javascript:void(0)" onclick="goToSection('statsSection')">Statistics</a>
 </div>
 
@@ -71,25 +71,25 @@ Ecgkasit B. 739898
 
 <div>
 <label>From Date</label>
-<input id="fromDate" type="date">
+<input id="fromDate" type="text" placeholder="YYYY-MM-DD">
 <small class="hint">UTC date</small>
 </div>
 
 <div>
 <label>From Time</label>
-<input id="fromTime" type="time">
+<input id="fromTime" type="text" placeholder="HH:MM">
 <small class="hint">UTC time</small>
 </div>
 
 <div>
 <label>To Date</label>
-<input id="toDate" type="date">
+<input id="toDate" type="text" placeholder="YYYY-MM-DD">
 <small class="hint">UTC date</small>
 </div>
 
 <div>
 <label>To Time</label>
-<input id="toTime" type="time">
+<input id="toTime" type="text" placeholder="HH:MM">
 <small class="hint">UTC time</small>
 </div>
 
@@ -165,8 +165,35 @@ Specific Routes
 </div>
 
 <div class="panel" id="airportSection">
-<h3>Airports</h3>
-<p class="hint">Coming soon: top airports / routes</p>
+
+<div class="stats-head">
+<div>
+<h3>Flight Intelligence Snapshot</h3>
+<p class="hint">Thailand traffic insights • Last 7 days</p>
+</div>
+
+<div class="live-meta">
+<span class="live-dot"></span>
+<span>Auto refresh 5 min</span>
+</div>
+</div>
+
+<div class="snapshot-grid">
+
+<div class="stat">
+<small>Top Airlines (7d)</small>
+<div id="topAirlinesList" class="airline-list">
+Loading...
+</div>
+</div>
+
+<div class="stat">
+<small>Traffic Trend (24h)</small>
+<canvas id="trendChart"></canvas>
+</div>
+
+</div>
+
 </div>
 
 <div class="panel" id="statsSection">

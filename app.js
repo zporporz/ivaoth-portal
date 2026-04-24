@@ -674,11 +674,169 @@ function getDisplayState(f) {
   return state.toUpperCase();
 }
 
+
+/* ===============================
+   SNAPSHOT SECTION
+================================= */
+
+let trendChart = null;
+
+async function loadSnapshot() {
+  await loadTopAirlines();
+  await loadTrafficTrend();
+}
+
+/* ===============================
+   TOP AIRLINES (7D)
+================================= */
+async function loadTopAirlines() {
+
+  try {
+
+    const week =
+      new Date(Date.now() - 7 * 86400000)
+      .toISOString();
+
+    const { data, error } = await db
+      .from("pilot_sessions")
+      .select("callsign")
+      .gte("connected_at", week)
+      .not("callsign", "is", null)
+      .limit(2000);
+
+    if (error) throw error;
+
+    const map = {};
+
+    (data || []).forEach(row => {
+
+      const raw =
+        (row.callsign || "")
+        .trim()
+        .toUpperCase();
+
+      if (raw.length < 3) return;
+
+      const code = raw.slice(0,3);
+
+      if (!/^[A-Z]{3}$/.test(code)) return;
+
+      map[code] = (map[code] || 0) + 1;
+
+    });
+
+    const top =
+      Object.entries(map)
+      .sort((a,b)=>b[1]-a[1])
+      .slice(0,8);
+
+    const wrap =
+      document.getElementById("topAirlinesList");
+
+    if (!top.length) {
+      wrap.innerHTML = "No data";
+      return;
+    }
+
+    wrap.innerHTML = top.map((x,i)=>`
+      <div class="airline-row">
+        <div class="airline-rank">#${i+1}</div>
+        <div class="airline-code">${x[0]}</div>
+        <div class="airline-count">${x[1]}</div>
+      </div>
+    `).join("");
+
+  } catch(err) {
+    console.log("Top Airlines Error:", err);
+  }
+}
+
+/* ===============================
+   TRAFFIC TREND (24H)
+================================= */
+async function loadTrafficTrend() {
+
+  try {
+
+    const last24 =
+      new Date(Date.now() - 24 * 3600000)
+      .toISOString();
+
+    const { data, error } = await db
+      .from("pilot_sessions")
+      .select("connected_at")
+      .gte("connected_at", last24)
+      .limit(3000);
+
+    if (error) throw error;
+
+    const buckets = Array(24).fill(0);
+
+    (data || []).forEach(row => {
+
+      const d = new Date(row.connected_at);
+      const h = d.getUTCHours();
+
+      buckets[h]++;
+
+    });
+
+    const labels = [
+      "00Z","01Z","02Z","03Z","04Z","05Z",
+      "06Z","07Z","08Z","09Z","10Z","11Z",
+      "12Z","13Z","14Z","15Z","16Z","17Z",
+      "18Z","19Z","20Z","21Z","22Z","23Z"
+    ];
+
+    if (trendChart) trendChart.destroy();
+
+    trendChart = new Chart(
+      document.getElementById("trendChart"),
+      {
+        type:"line",
+        data:{
+          labels:labels,
+          datasets:[{
+            data:buckets,
+            tension:.35,
+            fill:true,
+            borderWidth:3,
+            pointRadius:2
+          }]
+        },
+        options:{
+          responsive:true,
+          plugins:{
+            legend:{ display:false }
+          },
+          scales:{
+            x:{
+              ticks:{ color:"#9db5d8" },
+              grid:{ color:"rgba(255,255,255,.03)" }
+            },
+            y:{
+              beginAtZero:true,
+              ticks:{ color:"#9db5d8" },
+              grid:{ color:"rgba(255,255,255,.03)" }
+            }
+          }
+        }
+      }
+    );
+
+  } catch(err) {
+    console.log("Trend Error:", err);
+  }
+}
+
 /* ===============================
    START
 ================================= */
 loadDashboard();
+loadSnapshot();
+
 setInterval(loadDashboard, 300000);
+setInterval(loadSnapshot, 300000);
 
 window.searchFlights = searchFlights;
 window.exportCSV = exportCSV;
