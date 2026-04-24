@@ -574,6 +574,11 @@ font-weight:700;
 color:#6ea8ff;
 }
 
+#snapshotUpdated{
+color:#6ea8ff;
+font-weight:700;
+}
+
 @keyframes pulse{
 0%{opacity:1;transform:scale(1);}
 50%{opacity:.45;transform:scale(.85);}
