@@ -458,3 +458,53 @@ font-weight:700;
 grid-template-columns:1fr;
 }
 }
+
+.pro-table{
+width:100%;
+border-collapse:collapse;
+font-size:14px;
+}
+
+.pro-table th,
+.pro-table td{
+padding:14px;
+border-bottom:1px solid rgba(255,255,255,.06);
+text-align:left;
+}
+
+.pro-table th{
+color:#8fa7d8;
+font-weight:600;
+}
+
+.pro-table tr:hover{
+background:rgba(255,255,255,.03);
+}
+
+.trk-link{
+color:#7db4ff;
+font-weight:700;
+text-decoration:none;
+}
+
+.trk-link:hover{
+text-decoration:underline;
+}
+
+.badge{
+padding:6px 10px;
+border-radius:999px;
+font-size:12px;
+font-weight:700;
+text-transform:uppercase;
+}
+
+.badge.on{
+background:#123b22;
+color:#63ff97;
+}
+
+.badge.off{
+background:#3d1d28;
+color:#ff7b9c;
+}

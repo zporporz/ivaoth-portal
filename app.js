@@ -168,52 +168,68 @@ async function searchFlights() {
    RENDER SEARCH
 ================================= */
 function renderSearch(rows) {
-  const results = document.getElementById("results");
+  const wrap = document.getElementById("results");
 
-  document.getElementById("statFlights").innerText =
-    rows.length;
-
-  document.getElementById("statPilots").innerText =
-    new Set(rows.map(x => x.user_id)).size;
-
-  document.getElementById("statDep").innerText =
-    rows[0]?.departure || "-";
-
-  document.getElementById("statArr").innerText =
-    rows[0]?.arrival || "-";
-
-  if (rows.length === 0) {
-    results.innerHTML =
-      '<div class="msg">No flights detected.</div>';
+  if (!rows.length) {
+    wrap.innerHTML = `<div class="empty">No flights found.</div>`;
     return;
   }
 
-  let html = `
-  <table>
-  <tr>
-    <th>Callsign</th>
-    <th>Aircraft</th>
-    <th>VID</th>
-    <th>Route</th>
-    <th>Status</th>
-  </tr>
+  wrap.innerHTML = `
+    <table class="pro-table">
+      <thead>
+        <tr>
+          <th>Callsign</th>
+          <th>Aircraft</th>
+          <th>VID</th>
+          <th>Route</th>
+          <th>Connected</th>
+          <th>Duration</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody>
+        ${rows.map(r => {
+          const connected = r.connected_at
+            ? new Date(r.connected_at).toISOString().replace("T"," ").slice(0,16)
+            : "-";
+
+          let duration = "-";
+
+          if (r.connected_at) {
+            const mins = Math.floor((Date.now() - new Date(r.connected_at)) / 60000);
+            const h = Math.floor(mins / 60);
+            const m = mins % 60;
+            duration = h + "h " + m + "m";
+          }
+
+          return `
+            <tr>
+              <td>
+                <a href="https://tracker.ivao.aero/session/${r.session_id}"
+                   target="_blank"
+                   class="trk-link">
+                   ${r.callsign}
+                </a>
+              </td>
+
+              <td>${r.aircraft_id || "-"}</td>
+              <td>${r.user_id || "-"}</td>
+              <td>${r.departure || "-"} → ${r.arrival || "-"}</td>
+              <td>${connected}</td>
+              <td>${duration}</td>
+
+              <td>
+                <span class="badge ${r.status === "online" ? "on" : "off"}">
+                  ${r.status}
+                </span>
+              </td>
+            </tr>
+          `;
+        }).join("")}
+      </tbody>
+    </table>
   `;
-
-  rows.forEach(f => {
-    html += `
-    <tr>
-      <td>${f.callsign || "-"}</td>
-      <td>${f.aircraft_id || "-"}</td>
-      <td>${f.user_id || "-"}</td>
-      <td>${f.departure || "-"} → ${f.arrival || "-"}</td>
-      <td>${renderStatus(f)}</td>
-    </tr>
-    `;
-  });
-
-  html += `</table>`;
-
-  results.innerHTML = html;
 }
 
 /* ===============================
