@@ -569,7 +569,8 @@ function exportCSV() {
       f.departed_at || "",
       f.landed_at || "",
       f.status || "",
-      f.last_state || ""
+      getDisplayState(f),
+      getDisplayState(f)
     ]);
   });
 
@@ -594,4 +595,13 @@ function exportCSV() {
   a.click();
   document.body.removeChild(a);
   URL.revokeObjectURL(url);
+}
+function getDisplayState(f) {
+  const state = (f.last_state || "").trim();
+
+  if (f.landed_at) return "LANDED";
+  if (f.status === "offline") return "MISSING";
+  if (!state) return "ONLINE";
+
+  return state.toUpperCase();
 }
