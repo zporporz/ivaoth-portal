@@ -155,7 +155,9 @@ async function searchFlights() {
 
     latestData = data || [];
 
+    updateSearchStats(latestData);
     renderSearch(latestData);
+
   } catch (err) {
     console.log(err);
 
@@ -165,13 +167,50 @@ async function searchFlights() {
 }
 
 /* ===============================
+   SEARCH SUMMARY CARDS
+================================= */
+function updateSearchStats(rows) {
+  document.getElementById("statFlights").innerText =
+    rows.length;
+
+  document.getElementById("statPilots").innerText =
+    new Set(
+      rows.map(r => r.user_id).filter(Boolean)
+    ).size;
+
+  document.getElementById("statDep").innerText =
+    getMostCommon(
+      rows.map(r => r.departure).filter(Boolean)
+    );
+
+  document.getElementById("statArr").innerText =
+    getMostCommon(
+      rows.map(r => r.arrival).filter(Boolean)
+    );
+}
+
+function getMostCommon(arr) {
+  if (!arr.length) return "-";
+
+  const map = {};
+
+  arr.forEach(x => {
+    map[x] = (map[x] || 0) + 1;
+  });
+
+  return Object.entries(map)
+    .sort((a, b) => b[1] - a[1])[0][0];
+}
+
+/* ===============================
    RENDER SEARCH
 ================================= */
 function renderSearch(rows) {
   const wrap = document.getElementById("results");
 
   if (!rows.length) {
-    wrap.innerHTML = `<div class="empty">No flights found.</div>`;
+    wrap.innerHTML =
+      `<div class="empty">No flights found.</div>`;
     return;
   }
 
@@ -191,15 +230,22 @@ function renderSearch(rows) {
 ${rows.map(r => {
 
 const connected = r.connected_at
- ? new Date(r.connected_at).toISOString().replace("T"," ").slice(0,16)
+ ? new Date(r.connected_at)
+   .toISOString()
+   .replace("T"," ")
+   .slice(0,16)
  : "-";
 
 let duration = "-";
 
 if (r.connected_at) {
- const mins = Math.floor((Date.now() - new Date(r.connected_at)) / 60000);
+ const mins = Math.floor(
+   (Date.now() - new Date(r.connected_at)) / 60000
+ );
+
  const h = Math.floor(mins / 60);
  const m = mins % 60;
+
  duration = h + "h " + m + "m";
 }
 
@@ -216,8 +262,13 @@ ${r.callsign}
 </a>
 
 <div class="subline">
-<span class="aircraft-chip">${r.aircraft_id || "-"}</span>
-<span class="vid-chip">VID ${r.user_id}</span>
+<span class="aircraft-chip">
+${r.aircraft_id || "-"}
+</span>
+
+<span class="vid-chip">
+VID ${r.user_id}
+</span>
 </div>
 
 </div>
@@ -255,7 +306,10 @@ ${renderStatus(r)}
 ================================= */
 function renderStatus(f){
 
- const state = (f.last_state || "").trim().toLowerCase();
+ const state =
+   (f.last_state || "")
+   .trim()
+   .toLowerCase();
 
  if (f.landed_at) {
    return '<span class="badge green">LANDED</span>';
@@ -323,50 +377,55 @@ const centerTextPlugin = {
 async function loadDashboard() {
   try {
     const week =
-      new Date(Date.now() - 7 * 86400000).toISOString();
+      new Date(
+        Date.now() - 7 * 86400000
+      ).toISOString();
 
-    /* =====================================
-       PILOTS ONLINE (Thailand related only)
-    ===================================== */
     const { count: pilots } = await db
       .from("pilot_sessions")
-      .select("*", { count: "exact", head: true })
+      .select("*", {
+        count: "exact",
+        head: true
+      })
       .eq("status", "online")
-      .or("departure.like.VT%,arrival.like.VT%");
+      .or(
+        "departure.like.VT%,arrival.like.VT%"
+      );
 
-    /* =====================================
-       ATC ONLINE (Thailand only)
-    ===================================== */
     const { count: atc } = await db
       .from("atc_sessions")
-      .select("*", { count: "exact", head: true })
+      .select("*", {
+        count: "exact",
+        head: true
+      })
       .eq("status", "online")
       .like("callsign", "VT%");
 
-    /* =====================================
-       LANDED FLIGHTS (7d, Thailand only)
-    ===================================== */
     const { count: landed } = await db
       .from("pilot_sessions")
-      .select("*", { count: "exact", head: true })
+      .select("*", {
+        count: "exact",
+        head: true
+      })
       .gte("connected_at", week)
-      .or("departure.like.VT%,arrival.like.VT%")
+      .or(
+        "departure.like.VT%,arrival.like.VT%"
+      )
       .not("landed_at", "is", null);
 
-    /* =====================================
-       MISSING FLIGHTS (7d, Thailand only)
-    ===================================== */
     const { count: missing } = await db
       .from("pilot_sessions")
-      .select("*", { count: "exact", head: true })
+      .select("*", {
+        count: "exact",
+        head: true
+      })
       .gte("connected_at", week)
       .eq("status", "offline")
       .is("landed_at", null)
-      .or("departure.like.VT%,arrival.like.VT%");
+      .or(
+        "departure.like.VT%,arrival.like.VT%"
+      );
 
-    /* =====================================
-       UPDATE CARDS
-    ===================================== */
     document.getElementById("dPilots").innerText =
       pilots || 0;
 
@@ -381,12 +440,11 @@ async function loadDashboard() {
 
     document.getElementById("lastUpdated").innerText =
       "Updated " +
-      new Date().toUTCString().split(" ")[4] +
+      new Date()
+      .toUTCString()
+      .split(" ")[4] +
       " UTC";
 
-    /* =====================================
-       TOP DEPARTURES (7d Thailand)
-    ===================================== */
     const { data: deps } = await db
       .from("pilot_sessions")
       .select("departure")
@@ -402,16 +460,17 @@ async function loadDashboard() {
         (depMap[x.departure] || 0) + 1;
     });
 
-    const depSorted = Object.entries(depMap)
-      .sort((a, b) => b[1] - a[1])
-      .slice(0, 6);
+    const depSorted =
+      Object.entries(depMap)
+      .sort((a,b)=>b[1]-a[1])
+      .slice(0,6);
 
-    const depLabels = depSorted.map(x => x[0]);
-    const depData = depSorted.map(x => x[1]);
+    const depLabels =
+      depSorted.map(x => x[0]);
 
-    /* =====================================
-       TOP ARRIVALS (7d Thailand)
-    ===================================== */
+    const depData =
+      depSorted.map(x => x[1]);
+
     const { data: arrs } = await db
       .from("pilot_sessions")
       .select("arrival")
@@ -427,16 +486,17 @@ async function loadDashboard() {
         (arrMap[x.arrival] || 0) + 1;
     });
 
-    const arrSorted = Object.entries(arrMap)
-      .sort((a, b) => b[1] - a[1])
-      .slice(0, 6);
+    const arrSorted =
+      Object.entries(arrMap)
+      .sort((a,b)=>b[1]-a[1])
+      .slice(0,6);
 
-    const arrLabels = arrSorted.map(x => x[0]);
-    const arrData = arrSorted.map(x => x[1]);
+    const arrLabels =
+      arrSorted.map(x => x[0]);
 
-    /* =====================================
-       REDRAW CHARTS
-    ===================================== */
+    const arrData =
+      arrSorted.map(x => x[1]);
+
     if (depChart) depChart.destroy();
     if (arrChart) arrChart.destroy();
 
@@ -446,12 +506,10 @@ async function loadDashboard() {
         type: "doughnut",
         data: {
           labels: depLabels,
-          datasets: [
-            {
-              data: depData,
-              borderWidth: 0
-            }
-          ]
+          datasets: [{
+            data: depData,
+            borderWidth: 0
+          }]
         },
         plugins: [centerTextPlugin],
         options: {
@@ -459,7 +517,7 @@ async function loadDashboard() {
           plugins: {
             legend: {
               position: "bottom",
-              labels: { color: "#fff" }
+              labels: { color:"#fff" }
             }
           }
         }
@@ -472,12 +530,10 @@ async function loadDashboard() {
         type: "doughnut",
         data: {
           labels: arrLabels,
-          datasets: [
-            {
-              data: arrData,
-              borderWidth: 0
-            }
-          ]
+          datasets: [{
+            data: arrData,
+            borderWidth: 0
+          }]
         },
         plugins: [centerTextPlugin],
         options: {
@@ -485,7 +541,7 @@ async function loadDashboard() {
           plugins: {
             legend: {
               position: "bottom",
-              labels: { color: "#fff" }
+              labels: { color:"#fff" }
             }
           }
         }
@@ -516,7 +572,8 @@ window.addEventListener("scroll", () => {
 
   if (window.scrollY > 400)
     btn.classList.add("show");
-  else btn.classList.remove("show");
+  else
+    btn.classList.remove("show");
 });
 
 function scrollToTop() {
@@ -527,18 +584,8 @@ function scrollToTop() {
 }
 
 /* ===============================
-   START
+   EXPORT CSV
 ================================= */
-loadDashboard();
-setInterval(loadDashboard, 300000);
-
-window.searchFlights = searchFlights;
-window.exportCSV = exportCSV;
-window.resetForm = resetForm;
-window.toggleMode = toggleMode;
-window.goToSection = goToSection;
-window.scrollToTop = scrollToTop;
-
 function exportCSV() {
   if (!latestData || !latestData.length) {
     alert("No search results to export.");
@@ -568,40 +615,74 @@ function exportCSV() {
       f.connected_at || "",
       f.departed_at || "",
       f.landed_at || "",
-      f.status || "",
       getDisplayState(f),
       getDisplayState(f)
     ]);
   });
 
   const csv = rows.map(r =>
-    r.map(v => `"${String(v).replace(/"/g, '""')}"`).join(",")
+    r.map(v =>
+      `"${String(v)
+      .replace(/"/g,'""')}"`
+    ).join(",")
   ).join("\n");
 
-  const blob = new Blob([csv], {
-    type: "text/csv;charset=utf-8;"
-  });
+  const blob = new Blob(
+    [csv],
+    {
+      type:
+      "text/csv;charset=utf-8;"
+    }
+  );
 
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement("a");
+  const url =
+    URL.createObjectURL(blob);
+
+  const a =
+    document.createElement("a");
 
   a.href = url;
+
   a.download =
     "ivao-search-" +
-    new Date().toISOString().slice(0,19).replace(/:/g,"-") +
+    new Date()
+    .toISOString()
+    .slice(0,19)
+    .replace(/:/g,"-") +
     ".csv";
 
   document.body.appendChild(a);
   a.click();
   document.body.removeChild(a);
+
   URL.revokeObjectURL(url);
 }
-function getDisplayState(f) {
-  const state = (f.last_state || "").trim();
 
-  if (f.landed_at) return "LANDED";
-  if (f.status === "offline") return "MISSING";
-  if (!state) return "ONLINE";
+function getDisplayState(f) {
+  const state =
+    (f.last_state || "").trim();
+
+  if (f.landed_at)
+    return "LANDED";
+
+  if (f.status === "offline")
+    return "MISSING";
+
+  if (!state)
+    return "ONLINE";
 
   return state.toUpperCase();
 }
+
+/* ===============================
+   START
+================================= */
+loadDashboard();
+setInterval(loadDashboard, 300000);
+
+window.searchFlights = searchFlights;
+window.exportCSV = exportCSV;
+window.resetForm = resetForm;
+window.toggleMode = toggleMode;
+window.goToSection = goToSection;
+window.scrollToTop = scrollToTop;
