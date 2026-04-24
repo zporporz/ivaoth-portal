@@ -702,3 +702,18 @@ grid-template-columns:1fr;
 }
 
 }
+
+#trendChart{
+width:100% !important;
+height:100% !important;
+}
+
+.snapshot-grid .stat{
+display:flex;
+flex-direction:column;
+}
+
+.snapshot-grid .stat canvas{
+flex:1;
+min-height:0;
+}
