@@ -233,30 +233,31 @@ function renderSearch(rows) {
 /* ===============================
    STATUS
 ================================= */
-function renderStatus(f) {
+function renderStatus(f){
+
   const s = (f.last_state || "").toLowerCase();
 
   if (f.landed_at) {
-    return '<span class="badge green">Landed</span>';
-  }
-
-  if (f.status === "offline") {
-    return '<span class="badge missing">Missing</span>';
-  }
-
-  if (s.includes("approach") || s.includes("final")) {
-    return '<span class="badge yellow">Approach</span>';
-  }
-
-  if (s.includes("air") || s.includes("climb") || s.includes("cruise")) {
-    return '<span class="badge yellow">Enroute</span>';
+    return '<span class="badge green">LANDED</span>';
   }
 
   if (s.includes("taxi") || s.includes("ground")) {
-    return '<span class="badge blue">Taxi</span>';
+    return '<span class="badge green">LANDED</span>';
   }
 
-  return '<span class="badge blue">Online</span>';
+  if (s.includes("final") || s.includes("approach")) {
+    return '<span class="badge yellow">APPROACH</span>';
+  }
+
+  if (s.includes("air") || s.includes("climb") || s.includes("cruise")) {
+    return '<span class="badge blue">ENROUTE</span>';
+  }
+
+  if (f.status === "offline") {
+    return '<span class="badge red">MISSING</span>';
+  }
+
+  return '<span class="badge blue">ONLINE</span>';
 }
 
 /* ===============================
