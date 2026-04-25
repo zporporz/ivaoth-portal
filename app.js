@@ -108,7 +108,7 @@ async function searchFlights() {
       .or("departure.like.VT%,arrival.like.VT%")
       .lte("connected_at", to)
       .order("connected_at", { ascending: false })
-      .limit(250);
+      .limit(1500);
 
     const modeOn =
       document.getElementById("modeSwitch").checked;
