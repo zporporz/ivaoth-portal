@@ -3,7 +3,7 @@
    Search + Statistics via API VM
 ================================= */
 
-const API = "http://34.177.90.18:3001";
+const API = "";
 
 let latestData = [];
 let depChart = null;
