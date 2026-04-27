@@ -12,7 +12,9 @@ const db = new Pool({
 
 async function getAirlineInfo(icao) {
   try {
-    const res = await fetch(`https://api.ivao.aero/v2/airlines/${icao}`)
+    const res = await fetch(`https://api.ivao.aero/v2/airlines/${icao}`, {
+      headers: { 'apiKey': process.env.IVAO_API_KEY }
+    })
     if (!res.ok) return { name: null, logo: null }
     const data = await res.json()
     return {
