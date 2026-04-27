@@ -39,7 +39,7 @@ async function getAirlineInfo(icao) {
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*')
   try {
-    const { rows } = await db.query('SELECT * FROM top_airlines_7d()')
+    const { rows } = await db.query('SELECT * FROM top_airlines_7d() LIMIT 5')
 
     const enriched = await Promise.all(
       rows.map(async (row) => {
