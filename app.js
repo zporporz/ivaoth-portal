@@ -247,6 +247,8 @@ function renderLiveBoard() {
     return;
   }
 
+  document.getElementById("pilotCount").innerText = liveData.length;
+  
   const totalPages = Math.ceil(liveData.length / livePerPage);
   const start = (livePage - 1) * livePerPage;
   const pageData = liveData.slice(start, start + livePerPage);
@@ -303,6 +305,51 @@ function changeLivePage(dir) {
 }
 
 window.changeLivePage = changeLivePage;
+
+/* ===============================
+   LIVE ATC
+================================= */
+async function loadLiveAtc() {
+  const wrap = document.getElementById("liveAtcTable");
+  if (!wrap) return;
+
+  try {
+    const res  = await fetch(`${API}/api/live-atc`);
+    const data = await res.json();
+
+    document.getElementById("atcCount").innerText = data.length;
+
+    if (!data.length) {
+      wrap.innerHTML = '<div class="msg">No Thailand ATC online.</div>';
+      return;
+    }
+
+    wrap.innerHTML = `
+<table class="pro-table">
+<thead>
+<tr>
+<th>Callsign</th>
+<th>Airport</th>
+<th>Station</th>
+<th>Rating</th>
+</tr>
+</thead>
+<tbody>
+${data.map(r => `
+<tr>
+<td><span class="trk-link">${r.callsign}</span></td>
+<td><span class="aircraft-chip">${r.airport}</span></td>
+<td><span class="badge cyan">${r.station}</span></td>
+<td><span class="badge blue">${r.rating}</span></td>
+</tr>
+`).join("")}
+</tbody>
+</table>`;
+
+  } catch (err) {
+    console.log("Live ATC Error:", err);
+  }
+}
 
 async function loadDashboard() {
   try {
@@ -529,6 +576,10 @@ function getDisplayState(f) {
 loadDashboard();
 loadSnapshot();
 loadLiveBoard();
+loadLiveAtc();
+
+setInterval(loadLiveAtc, 60000);
+window.loadLiveAtc = loadLiveAtc;
 
 setInterval(loadLiveBoard, 60000);
 setInterval(loadDashboard, 600000);

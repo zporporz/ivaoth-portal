@@ -163,7 +163,7 @@ Specific Routes
   <div class="stats-head">
     <div>
       <h3>Live Board</h3>
-      <p class="hint">Thailand pilots online now • Updates every 60s</p>
+      <p class="hint">Thailand traffic online now • Updates every 60s</p>
     </div>
     <div class="live-meta">
       <span class="live-dot"></span>
@@ -171,7 +171,26 @@ Specific Routes
       <small id="liveUpdated">Updating...</small>
     </div>
   </div>
-  <div id="liveBoardTable" style="margin-top:16px;">Loading...</div>
+
+  <div class="live-grid">
+
+    <div class="live-col">
+      <div class="live-col-head">
+        <span>✈️ Pilots</span>
+        <span id="pilotCount" class="live-count">-</span>
+      </div>
+      <div id="liveBoardTable">Loading...</div>
+    </div>
+
+    <div class="live-col">
+      <div class="live-col-head">
+        <span>🎙️ ATC</span>
+        <span id="atcCount" class="live-count">-</span>
+      </div>
+      <div id="liveAtcTable">Loading...</div>
+    </div>
+
+  </div>
 </div>
 
 <div class="panel" id="airportSection">
