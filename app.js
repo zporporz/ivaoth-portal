@@ -337,7 +337,7 @@ async function loadLiveAtc() {
 <tbody>
 ${data.map(r => `
 <tr>
-<td><span class="trk-link">${r.callsign}</span></td>
+<td><a href="https://tracker.ivao.aero/sessions/${r.session_id}" target="_blank" class="trk-link">${r.callsign}</a></td>
 <td><span class="aircraft-chip">${r.airport}</span></td>
 <td><span class="badge cyan">${r.station}</span></td>
 <td><span class="badge blue">${r.rating}</span></td>
