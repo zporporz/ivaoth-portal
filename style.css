@@ -752,3 +752,18 @@ flex-direction:column;
 flex:1;
 min-height:0;
 }
+
+.pagination{
+display:flex;
+align-items:center;
+justify-content:center;
+gap:16px;
+margin-top:16px;
+font-size:14px;
+color:#9bb2d3;
+}
+
+.pagination button:disabled{
+opacity:.3;
+cursor:not-allowed;
+}

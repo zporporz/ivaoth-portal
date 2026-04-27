@@ -220,21 +220,38 @@ const centerTextPlugin = {
 /* ===============================
    LIVE BOARD
 ================================= */
-async function loadLiveBoard() {
-  const wrap = document.getElementById("liveBoardTable");
-  if (!wrap) return;
-  wrap.innerHTML = '<div class="msg">Loading live traffic...</div>';
+let livePage = 1;
+const livePerPage = 5;
+let liveData = [];
 
+async function loadLiveBoard() {
   try {
     const res  = await fetch(`${API}/api/live`);
-    const data = await res.json();
+    liveData = await res.json();
+    livePage = 1;
+    renderLiveBoard();
 
-    if (!data.length) {
-      wrap.innerHTML = '<div class="msg">No Thailand flights online.</div>';
-      return;
-    }
+    document.getElementById("liveUpdated").innerText =
+      "Updated " + new Date().toUTCString().split(" ")[4] + " UTC";
+  } catch (err) {
+    console.log("Live Board Error:", err);
+    document.getElementById("liveBoardTable").innerHTML =
+      '<div class="msg">Failed to load live board.</div>';
+  }
+}
 
-    wrap.innerHTML = `
+function renderLiveBoard() {
+  const wrap = document.getElementById("liveBoardTable");
+  if (!liveData.length) {
+    wrap.innerHTML = '<div class="msg">No Thailand flights online.</div>';
+    return;
+  }
+
+  const totalPages = Math.ceil(liveData.length / livePerPage);
+  const start = (livePage - 1) * livePerPage;
+  const pageData = liveData.slice(start, start + livePerPage);
+
+  wrap.innerHTML = `
 <table class="pro-table">
 <thead>
 <tr>
@@ -245,7 +262,7 @@ async function loadLiveBoard() {
 </tr>
 </thead>
 <tbody>
-${data.map(r => `
+${pageData.map(r => `
 <tr>
 <td>
 <div class="flight-box">
@@ -270,13 +287,22 @@ ${data.map(r => `
 </tr>
 `).join("")}
 </tbody>
-</table>`;
+</table>
 
-  } catch (err) {
-    console.log("Live Board Error:", err);
-    wrap.innerHTML = '<div class="msg">Failed to load live board.</div>';
-  }
+<div class="pagination">
+  <button class="btn-ghost" onclick="changeLivePage(-1)" ${livePage === 1 ? 'disabled' : ''}>← Prev</button>
+  <span>Page ${livePage} / ${totalPages} &nbsp;•&nbsp; ${liveData.length} flights</span>
+  <button class="btn-ghost" onclick="changeLivePage(1)" ${livePage === totalPages ? 'disabled' : ''}>Next →</button>
+</div>`;
 }
+
+function changeLivePage(dir) {
+  const totalPages = Math.ceil(liveData.length / livePerPage);
+  livePage = Math.max(1, Math.min(totalPages, livePage + dir));
+  renderLiveBoard();
+}
+
+window.changeLivePage = changeLivePage;
 
 async function loadDashboard() {
   try {
