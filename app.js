@@ -283,7 +283,14 @@ async function loadTopAirlines() {
     wrap.innerHTML = data.map((x, i) => `
       <div class="airline-row">
         <div class="airline-rank">#${i + 1}</div>
-        <div class="airline-code">${x.airline}</div>
+        <img class="airline-logo" 
+          src="${x.logo || ''}" 
+          onerror="this.style.display='none'"
+          alt="${x.airline}">
+        <div class="airline-info">
+          <div class="airline-code">${x.airline}</div>
+          ${x.name ? `<div class="airline-name">${x.name}</div>` : ''}
+        </div>
         <div class="airline-count">${x.total}</div>
       </div>
     `).join("");

@@ -10,11 +10,38 @@ const db = new Pool({
   ssl: false
 })
 
+async function getAirlineInfo(icao) {
+  try {
+    const res = await fetch(`https://api.ivao.aero/v2/airlines/${icao}`)
+    if (!res.ok) return { name: null, logo: null }
+    const data = await res.json()
+    return {
+      name: data.name || null,
+      logo: `https://api.ivao.aero/v2/airlines/${icao}/logo`
+    }
+  } catch {
+    return { name: null, logo: null }
+  }
+}
+
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*')
   try {
     const { rows } = await db.query('SELECT * FROM top_airlines_7d()')
-    res.json(rows)
+
+    const enriched = await Promise.all(
+      rows.map(async (row) => {
+        const info = await getAirlineInfo(row.airline)
+        return {
+          airline: row.airline,
+          total: row.total,
+          name: info.name,
+          logo: info.logo
+        }
+      })
+    )
+
+    res.json(enriched)
   } catch (err) {
     res.status(500).json({ error: err.message })
   }
