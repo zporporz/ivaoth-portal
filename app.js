@@ -184,7 +184,7 @@ ${rows.map(r => {
    STATUS
 ================================= */
 function renderStatus(f) {
-  const state = (f.last_state || "").trim().toLowerCase();
+  const state = (f.last_state || f.state || "").trim().toLowerCase();
   if (f.landed_at)          return '<span class="badge green">LANDED</span>';
   if (state === "landed")   return '<span class="badge green">LANDED</span>';
   if (f.status === "offline") return '<span class="badge red">MISSING</span>';
@@ -216,6 +216,67 @@ const centerTextPlugin = {
     ctx.restore();
   }
 };
+
+/* ===============================
+   LIVE BOARD
+================================= */
+async function loadLiveBoard() {
+  const wrap = document.getElementById("liveBoardTable");
+  if (!wrap) return;
+  wrap.innerHTML = '<div class="msg">Loading live traffic...</div>';
+
+  try {
+    const res  = await fetch(`${API}/api/live`);
+    const data = await res.json();
+
+    if (!data.length) {
+      wrap.innerHTML = '<div class="msg">No Thailand flights online.</div>';
+      return;
+    }
+
+    wrap.innerHTML = `
+<table class="pro-table">
+<thead>
+<tr>
+<th>Flight</th>
+<th>Route</th>
+<th>Aircraft</th>
+<th>State</th>
+</tr>
+</thead>
+<tbody>
+${data.map(r => `
+<tr>
+<td>
+<div class="flight-box">
+  <div style="display:flex;align-items:center;gap:10px;">
+    ${r.logo ? `<img src="${r.logo}" style="width:28px;height:28px;object-fit:contain;border-radius:6px;">` : ''}
+    <a href="https://tracker.ivao.aero/sessions/${r.session_id}" target="_blank" class="trk-link">${r.callsign}</a>
+  </div>
+  <div class="subline">
+    <span class="vid-chip">VID ${r.user_id}</span>
+  </div>
+</div>
+</td>
+<td>
+<div class="route-box">
+  <span>${r.departure || '---'}</span>
+  <span class="arrow">→</span>
+  <span>${r.arrival || '---'}</span>
+</div>
+</td>
+<td><span class="aircraft-chip">${r.aircraft || '-'}</span></td>
+<td>${renderStatus(r)}</td>
+</tr>
+`).join("")}
+</tbody>
+</table>`;
+
+  } catch (err) {
+    console.log("Live Board Error:", err);
+    wrap.innerHTML = '<div class="msg">Failed to load live board.</div>';
+  }
+}
 
 async function loadDashboard() {
   try {
@@ -441,7 +502,9 @@ function getDisplayState(f) {
 ================================= */
 loadDashboard();
 loadSnapshot();
+loadLiveBoard();
 
+setInterval(loadLiveBoard, 60000);
 setInterval(loadDashboard, 600000);
 setInterval(loadSnapshot, 600000);
 
