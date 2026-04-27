@@ -17,10 +17,20 @@ async function getAirlineInfo(icao) {
     })
     if (!res.ok) return { name: null, logo: null }
     const data = await res.json()
-    return {
-      name: data.name || null,
-      logo: `https://api.ivao.aero/v2/airlines/${icao}/logo`
+
+    const logoRes = await fetch(`https://api.ivao.aero/v2/airlines/${icao}/logo`, {
+      headers: { 'apiKey': process.env.IVAO_API_KEY }
+    })
+
+    let logo = null
+    if (logoRes.ok) {
+      const blob = await logoRes.arrayBuffer()
+      const b64 = Buffer.from(blob).toString('base64')
+      const ct = logoRes.headers.get('content-type') || 'image/png'
+      logo = `data:${ct};base64,${b64}`
     }
+
+    return { name: data.name || null, logo }
   } catch {
     return { name: null, logo: null }
   }
