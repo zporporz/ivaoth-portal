@@ -593,7 +593,7 @@ async function loadEventPanel() {
         <div class="event-panel-title">Division Online Day</div>
         <div class="event-panel-meta">Every Friday • 13:00 – 16:00 UTC</div>
         <div class="event-panel-airports">
-          <span>VTBD</span><span>BKK FIR</span><span>VTSP</span>
+          <span>Bangkok FIR</span>
         </div>
         <a href="http://l.th.ivao.aero/discord" target="_blank" class="event-panel-link">Discord →</a>
       </div>
