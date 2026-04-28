@@ -883,14 +883,17 @@ min-width:0;
 }
 
 .event-panel{
-width:240px;
-max-width:240px;
+width:300px;
+max-width:300px;
 flex-shrink:0;
 position:sticky;
-top:24px;
+top:28px;
+align-self:flex-start;
 display:flex;
 flex-direction:column;
-gap:10px;
+gap:16px;
+max-height:calc(100vh - 56px);
+overflow-y:auto;
 }
 
 .event-panel-head{
