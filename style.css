@@ -948,17 +948,6 @@ flex-direction:column;
 gap:6px;
 }
 
-.event-panel{
-width:220px;
-flex-shrink:0;
-position:sticky;
-top:24px;
-align-self:flex-start;
-display:flex;
-flex-direction:column;
-gap:16px;
-}
-
 .event-panel-meta{
 font-size:11px;
 color:#7a99c8;
