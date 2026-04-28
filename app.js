@@ -274,7 +274,6 @@ ${pageData.map(r => `
   </div>
   <div class="subline">
     <span class="vid-chip">VID ${r.user_id}</span>
-    <span class="vid-chip">VID ${r.user_id}</span>
     ${r.rating ? `<span class="aircraft-chip">${r.rating}</span>` : ''}
   </div>
 </div>

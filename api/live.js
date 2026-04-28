@@ -11,9 +11,9 @@ const db = new Pool({
 })
 
 const pilotRatingMap = {
-  1: 'FS1', 2: 'FS2', 3: 'FS3',
-  4: 'PP',  5: 'SPP', 6: 'CP',
-  7: 'ATP', 8: 'SFI', 9: 'CFI'
+  0: 'FS1', 1: 'FS2', 2: 'FS3',
+  3: 'PP',  4: 'SPP', 5: 'CP',
+  6: 'ATP', 7: 'SFI', 8: 'CFI'
 }
 
 async function getAirlineLogo(icao) {
