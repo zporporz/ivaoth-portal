@@ -607,7 +607,7 @@ async function loadEventPanel() {
       <div class="event-panel-card">
         ${e.imageUrl
           ? `<img class="event-panel-banner" src="${e.imageUrl}" onerror="this.style.display='none'" alt="">`
-          : `<div class="event-panel-banner-fallback">IVAO TH</div>`}
+          : `<img class="event-panel-banner" src="https://storage.th.ivao.aero/EVENTS/utilities/Division%20Online%20Day.png" alt="Division Online Day">`}
         <div class="event-panel-body">
           <div class="event-panel-title">${e.title}</div>
           <div class="event-panel-meta">${dateStr} • ${timeStr}</div>
