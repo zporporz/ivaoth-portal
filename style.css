@@ -946,10 +946,15 @@ flex-direction:column;
 gap:6px;
 }
 
-.event-panel-title{
-font-size:13px;
-font-weight:700;
-color:#eaf2ff;
+.event-panel{
+width:220px;
+flex-shrink:0;
+position:sticky;
+top:24px;
+align-self:flex-start;
+display:flex;
+flex-direction:column;
+gap:10px;
 }
 
 .event-panel-meta{
