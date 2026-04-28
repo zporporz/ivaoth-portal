@@ -55,7 +55,7 @@ export default async function handler(req, res) {
           user_id: row.user_id,
           departure: row.departure,
           arrival: row.arrival,
-          state: row.last_state || 'Online',
+          last_state: row.last_state || '',
           aircraft: row.aircraft_id,
           connected_at: row.connected_at,
           logo
