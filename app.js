@@ -588,7 +588,7 @@ async function loadEventPanel() {
 
     const onlineDay = `
     <div class="event-panel-card">
-      <div class="event-panel-banner-fallback">IVAO TH</div>
+      <img class="event-panel-banner" src="https://storage.th.ivao.aero/EVENTS/utilities/Division%20Online%20Day.png" onerror="this.style.display='none'" alt="Division Online Day">
       <div class="event-panel-body">
         <div class="event-panel-title">Division Online Day</div>
         <div class="event-panel-meta">Every Friday • 13:00 – 16:00 UTC</div>

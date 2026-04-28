@@ -874,6 +874,7 @@ width:100%;
 display:flex;
 gap:20px;
 align-items:flex-start;
+overflow:hidden;
 }
 
 .content-area{
@@ -882,7 +883,8 @@ min-width:0;
 }
 
 .event-panel{
-width:275px;
+width:240px;
+max-width:240px;
 flex-shrink:0;
 position:sticky;
 top:24px;
