@@ -862,3 +862,9 @@ transition:.2s;
 .btn-forum:hover{
 background:#0a1e38;
 }
+
+.discord-widget{
+margin-top:16px;
+border-radius:12px;
+overflow:hidden;
+}
