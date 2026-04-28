@@ -891,7 +891,7 @@ top:28px;
 align-self:flex-start;
 display:flex;
 flex-direction:column;
-gap:16px;
+gap:25px;
 max-height:calc(100vh - 56px);
 overflow-y:auto;
 }
