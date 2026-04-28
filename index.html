@@ -4,318 +4,211 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>IVAO Thailand Flight Portal</title>
-
 <link rel="icon" type="image/png" href="favicon.png">
-
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-
 <link rel="stylesheet" href="style.css">
 </head>
-
 <body>
-
 <div class="app">
 
 <aside class="sidebar">
-
-<div class="brand">
-<img src="logo.png" alt="IVAO TH">
-</div>
-
-<div class="credit-box">
-Created by
-<a href="https://ivao.aero/Member.aspx?Id=739898" target="_blank">
-Ecgkasit B. - VID 739898
-</a>
-</div>
-
-<div class="nav">
-<a href="javascript:void(0)" class="active" onclick="goToSection('searchSection')">Search Flights</a>
-<a href="javascript:void(0)" onclick="goToSection('liveSection')">Live Board</a>
-<a href="javascript:void(0)" onclick="goToSection('airportSection')">Flight Intelligence Snapshot</a>
-<a href="javascript:void(0)" onclick="goToSection('statsSection')">Statistics</a>
-</div>
-
-<div class="sidebar-links">
-    <a href="http://l.th.ivao.aero/discord" target="_blank" class="btn-discord">
-      DISCORD
-    </a>
-    <a href="https://forum.ivao.aero/" target="_blank" class="btn-forum">
-      💬 FORUM
-    </a>
+  <div class="brand">
+    <img src="logo.png" alt="IVAO TH">
   </div>
-
-
-<div class="discord-widget">
-  <iframe src="https://discord.com/widget?id=386491307033493505&theme=dark"
-    width="100%"
-    height="400"
-    allowtransparency="true"
-    frameborder="0"
-    sandbox="allow-popups allow-popups-to-escape-sandbox allow-same-origin allow-scripts">
-  </iframe>
-</div>
-
+  <div class="credit-box">
+    Created by
+    <a href="https://ivao.aero/Member.aspx?Id=739898" target="_blank">Ecgkasit B. - VID 739898</a>
+  </div>
+  <div class="nav">
+    <a href="javascript:void(0)" class="active" onclick="goToSection('searchSection')">Search Flights</a>
+    <a href="javascript:void(0)" onclick="goToSection('liveSection')">Live Board</a>
+    <a href="javascript:void(0)" onclick="goToSection('airportSection')">Flight Intelligence Snapshot</a>
+    <a href="javascript:void(0)" onclick="goToSection('statsSection')">Statistics</a>
+  </div>
+  <div class="sidebar-links">
+    <a href="http://l.th.ivao.aero/discord" target="_blank" class="btn-discord">DISCORD</a>
+    <a href="https://forum.ivao.aero/" target="_blank" class="btn-forum">💬 FORUM</a>
+  </div>
+  <div class="discord-widget">
+    <iframe src="https://discord.com/widget?id=386491307033493505&theme=dark"
+      width="100%" height="400" allowtransparency="true" frameborder="0"
+      sandbox="allow-popups allow-popups-to-escape-sandbox allow-same-origin allow-scripts">
+    </iframe>
+  </div>
 </aside>
 
-
 <main class="main">
-<div class="main-with-events">
-<div class="content-area">
+  <div class="main-with-events">
 
-<div class="title">
-<h1>THAILAND FLIGHT INTELLIGENCE SYSTEM</h1>
-<p>Historical IVAO Thailand traffic search & route intelligence</p>
-</div>
-
-<div class="panel" id="searchSection">
-
-<div class="search-grid">
-
-<div id="airportWrap" style="display:none;">
-<label>Airport ICAOs</label>
-<input id="airportCodes" placeholder="VTBD, VTSM">
-<small class="hint">Separate multiple airports with commas</small>
-</div>
-
-<div id="depWrap">
-<label>Departure ICAOs</label>
-<input id="dep" placeholder="VTBD">
-<small class="hint">Single ICAO code</small>
-</div>
-
-<div id="arrWrap">
-<label>Arrival ICAOs</label>
-<input id="arr" placeholder="VTSM">
-<small class="hint">Single ICAO code</small>
-</div>
-
-<div>
-<label>From Date</label>
-<input id="fromDate" type="date">
-<small class="hint">UTC date</small>
-</div>
-
-<div>
-<label>From Time</label>
-<input id="fromTime" type="text" placeholder="HH:MM">
-<small class="hint">UTC time</small>
-</div>
-
-<div>
-<label>To Date</label>
-<input id="toDate" type="date">
-<small class="hint">UTC date</small>
-</div>
-
-<div>
-<label>To Time</label>
-<input id="toTime" type="text" placeholder="HH:MM">
-<small class="hint">UTC time</small>
-</div>
-
-</div>
-
-<div class="search-options">
-
-<div class="option-group">
-
-<label class="option-item" id="bidiWrap">
-<input type="checkbox" id="bidirectional" checked>
-Bidirectional Search
-</label>
-
-<div class="option-item">
-Specific Routes
-
-<label class="switch">
-<input type="checkbox" id="modeSwitch" onchange="toggleMode()">
-<span class="slider"></span>
-</label>
-
-</div>
-
-</div>
-
-<div class="action-group">
-<button class="btn-main" onclick="searchFlights()">SEARCH</button>
-<button class="btn-green" onclick="exportCSV()">EXPORT CSV</button>
-<button class="btn-ghost" onclick="resetForm()">RESET</button>
-</div>
-
-</div>
-
-</div>
-
-<div id="resultSection" style="display:none;">
-
-<div class="stats">
-
-<div class="stat">
-<small>Flights Found</small>
-<h2 id="statFlights">0</h2>
-</div>
-
-<div class="stat">
-<small>Unique Pilots</small>
-<h2 id="statPilots">0</h2>
-</div>
-
-<div class="stat">
-<small>Main Departure</small>
-<h2 id="statDep">-</h2>
-</div>
-
-<div class="stat">
-<small>Main Arrival</small>
-<h2 id="statArr">-</h2>
-</div>
-
-</div>
-
-<div class="panel">
-<h3>Flight Search Results</h3>
-<div id="results"></div>
-</div>
-
-</div>
-
-<div class="panel" id="liveSection">
-  <div class="stats-head">
-    <div>
-      <h3>Live Board</h3>
-      <p class="hint">Thailand traffic online now • Updates every 60s</p>
-    </div>
-    <div class="live-meta">
-      <span class="live-dot"></span>
-      <span>Live</span>
-      <small id="liveUpdated">Updating...</small>
-    </div>
-  </div>
-
-  <div class="live-grid">
-
-    <div class="live-col">
-      <div class="live-col-head">
-        <span>✈️ Pilots</span>
-        <span id="pilotCount" class="live-count">-</span>
+    <div class="content-area">
+      <div class="title">
+        <h1>THAILAND FLIGHT INTELLIGENCE SYSTEM</h1>
+        <p>Historical IVAO Thailand traffic search & route intelligence</p>
       </div>
-      <div id="liveBoardTable">Loading...</div>
-    </div>
 
-    <div class="live-col">
-      <div class="live-col-head">
-        <span>🎙️ ATC</span>
-        <span id="atcCount" class="live-count">-</span>
+      <div class="panel" id="searchSection">
+        <div class="search-grid">
+          <div id="airportWrap" style="display:none;">
+            <label>Airport ICAOs</label>
+            <input id="airportCodes" placeholder="VTBD, VTSM">
+            <small class="hint">Separate multiple airports with commas</small>
+          </div>
+          <div id="depWrap">
+            <label>Departure ICAOs</label>
+            <input id="dep" placeholder="VTBD">
+            <small class="hint">Single ICAO code</small>
+          </div>
+          <div id="arrWrap">
+            <label>Arrival ICAOs</label>
+            <input id="arr" placeholder="VTSM">
+            <small class="hint">Single ICAO code</small>
+          </div>
+          <div>
+            <label>From Date</label>
+            <input id="fromDate" type="date">
+            <small class="hint">UTC date</small>
+          </div>
+          <div>
+            <label>From Time</label>
+            <input id="fromTime" type="text" placeholder="HH:MM">
+            <small class="hint">UTC time</small>
+          </div>
+          <div>
+            <label>To Date</label>
+            <input id="toDate" type="date">
+            <small class="hint">UTC date</small>
+          </div>
+          <div>
+            <label>To Time</label>
+            <input id="toTime" type="text" placeholder="HH:MM">
+            <small class="hint">UTC time</small>
+          </div>
+        </div>
+        <div class="search-options">
+          <div class="option-group">
+            <label class="option-item" id="bidiWrap">
+              <input type="checkbox" id="bidirectional" checked>
+              Bidirectional Search
+            </label>
+            <div class="option-item">
+              Specific Routes
+              <label class="switch">
+                <input type="checkbox" id="modeSwitch" onchange="toggleMode()">
+                <span class="slider"></span>
+              </label>
+            </div>
+          </div>
+          <div class="action-group">
+            <button class="btn-main" onclick="searchFlights()">SEARCH</button>
+            <button class="btn-green" onclick="exportCSV()">EXPORT CSV</button>
+            <button class="btn-ghost" onclick="resetForm()">RESET</button>
+          </div>
+        </div>
       </div>
-      <div id="liveAtcTable">Loading...</div>
+
+      <div id="resultSection" style="display:none;">
+        <div class="stats">
+          <div class="stat"><small>Flights Found</small><h2 id="statFlights">0</h2></div>
+          <div class="stat"><small>Unique Pilots</small><h2 id="statPilots">0</h2></div>
+          <div class="stat"><small>Main Departure</small><h2 id="statDep">-</h2></div>
+          <div class="stat"><small>Main Arrival</small><h2 id="statArr">-</h2></div>
+        </div>
+        <div class="panel">
+          <h3>Flight Search Results</h3>
+          <div id="results"></div>
+        </div>
+      </div>
+
+      <div class="panel" id="liveSection">
+        <div class="stats-head">
+          <div>
+            <h3>Live Board</h3>
+            <p class="hint">Thailand traffic online now • Updates every 60s</p>
+          </div>
+          <div class="live-meta">
+            <span class="live-dot"></span>
+            <span>Live</span>
+            <small id="liveUpdated">Updating...</small>
+          </div>
+        </div>
+        <div class="live-grid">
+          <div class="live-col">
+            <div class="live-col-head">
+              <span>✈️ Pilots</span>
+              <span id="pilotCount" class="live-count">-</span>
+            </div>
+            <div id="liveBoardTable">Loading...</div>
+          </div>
+          <div class="live-col">
+            <div class="live-col-head">
+              <span>🎙️ ATC</span>
+              <span id="atcCount" class="live-count">-</span>
+            </div>
+            <div id="liveAtcTable">Loading...</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel" id="airportSection">
+        <div class="stats-head">
+          <div>
+            <h3>Flight Intelligence Snapshot</h3>
+            <p class="hint">Thailand traffic insights • Last 7 days</p>
+          </div>
+          <div class="live-meta">
+            <span class="live-dot"></span>
+            <span>Auto refresh 10 min</span>
+            <small id="snapshotUpdated">Updating...</small>
+          </div>
+        </div>
+        <div class="snapshot-grid">
+          <div class="stat">
+            <small>Top Airlines (7d)</small>
+            <div id="topAirlinesList" class="airline-list">Loading...</div>
+          </div>
+          <div class="stat">
+            <small>Traffic Trend (24h)</small>
+            <canvas id="trendChart"></canvas>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel" id="statsSection">
+        <div class="stats-head">
+          <div>
+            <h3>Thailand Statistics</h3>
+            <p class="hint">Thai FIR / VT airports traffic only • Last 7 days</p>
+          </div>
+          <div class="live-meta">
+            <span class="live-dot"></span>
+            <span>Auto refresh 10 min</span>
+            <small id="lastUpdated">Updating...</small>
+          </div>
+        </div>
+        <div class="stats" id="dashCards">
+          <div class="stat live-card pilots"><small>Thailand Pilots Online</small><h2 id="dPilots">-</h2></div>
+          <div class="stat live-card atc"><small>Thailand ATC Online</small><h2 id="dAtc">-</h2></div>
+          <div class="stat landed-card"><small>Thailand Landed Flights (7d)</small><h2 id="dLanded">-</h2></div>
+          <div class="stat missing-card"><small>Thailand Missing Flights (7d)</small><h2 id="dMissing">-</h2></div>
+        </div>
+        <div class="stats chart-grid">
+          <div class="stat"><small>Top Thailand Departures (7d)</small><canvas id="topDeps"></canvas></div>
+          <div class="stat"><small>Top Thailand Arrivals (7d)</small><canvas id="topArrs"></canvas></div>
+        </div>
+      </div>
+    </div>
+
+    <div id="eventPanel" class="event-panel">
+      <div class="event-panel-head">
+        <span>Upcoming Events</span>
+        <button onclick="closeEventPanel()">×</button>
+      </div>
+      <div id="eventPanelList">Loading...</div>
     </div>
 
   </div>
-</div>
-
-<div class="panel" id="airportSection">
-
-<div class="stats-head">
-<div>
-<h3>Flight Intelligence Snapshot</h3>
-<p class="hint">Thailand traffic insights • Last 7 days</p>
-</div>
-
-<div class="live-meta">
-<span class="live-dot"></span>
-<span>Auto refresh 10 min</span>
-<small id="snapshotUpdated">Updating...</small>
-</div>
-</div>
-
-<div class="snapshot-grid">
-
-<div class="stat">
-<small>Top Airlines (7d)</small>
-<div id="topAirlinesList" class="airline-list">
-Loading...
-</div>
-</div>
-
-<div class="stat">
-<small>Traffic Trend (24h)</small>
-<canvas id="trendChart"></canvas>
-</div>
-
-</div>
-
-</div>
-
-<div class="panel" id="statsSection">
-
-<div class="stats-head">
-<div>
-<h3>Thailand Statistics</h3>
-<p class="hint">Thai FIR / VT airports traffic only • Last 7 days</p>
-</div>
-
-<div class="live-meta">
-<span class="live-dot"></span>
-<span>Auto refresh 10 min</span>
-<small id="lastUpdated">Updating...</small>
-</div>
-</div>
-
-<div class="stats" id="dashCards">
-
-<div class="stat live-card pilots">
-<small>Thailand Pilots Online</small>
-<h2 id="dPilots">-</h2>
-</div>
-
-<div class="stat live-card atc">
-<small>Thailand ATC Online</small>
-<h2 id="dAtc">-</h2>
-</div>
-
-<div class="stat landed-card">
-<small>Thailand Landed Flights (7d)</small>
-<h2 id="dLanded">-</h2>
-</div>
-
-<div class="stat missing-card">
-<small>Thailand Missing Flights (7d)</small>
-<h2 id="dMissing">-</h2>
-</div>
-
-</div>
-
-<div class="stats chart-grid">
-
-<div class="stat">
-<small>Top Thailand Departures (7d)</small>
-<canvas id="topDeps"></canvas>
-</div>
-
-<div class="stat">
-<small>Top Thailand Arrivals (7d)</small>
-<canvas id="topArrs"></canvas>
-</div>
-
-</div>
-
-</div>
-</div>
-
-</div>
-
-<div id="eventPanel" class="event-panel">
-  <div class="event-panel-head">
-    <span>Upcoming Events</span>
-    <button onclick="closeEventPanel()">×</button>
-  </div>
-  <div id="eventPanelList">Loading...</div>
-</div>
-
-</div>
 </main>
 
 </div>
@@ -323,8 +216,6 @@ Loading...
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="app.js"></script>
-
 <button id="topBtn" onclick="scrollToTop()">↑</button>
-
 </body>
 </html>
