@@ -571,12 +571,78 @@ function getDisplayState(f) {
 }
 
 /* ===============================
+   EVENT PANEL
+================================= */
+function closeEventPanel() {
+  const panel = document.getElementById("eventPanel");
+  if (panel) panel.style.display = "none";
+}
+
+async function loadEventPanel() {
+  const wrap = document.getElementById("eventPanelList");
+  if (!wrap) return;
+
+  try {
+    const res  = await fetch(`${API}/api/events`);
+    const data = await res.json();
+
+    const onlineDay = `
+    <div class="event-panel-card">
+      <div class="event-panel-banner-fallback">IVAO TH</div>
+      <div class="event-panel-body">
+        <div class="event-panel-title">Division Online Day</div>
+        <div class="event-panel-meta">Every Friday • 13:00 – 16:00 UTC</div>
+        <div class="event-panel-airports">
+          <span>VTBD</span><span>VTBS</span><span>VTSP</span>
+        </div>
+        <a href="http://l.th.ivao.aero/discord" target="_blank" class="event-panel-link">Discord →</a>
+      </div>
+    </div>`;
+
+    const events = data.map(e => {
+      const start   = new Date(e.startDate);
+      const dateStr = start.toUTCString().slice(0,16);
+      const timeStr = start.toUTCString().split(' ')[4].slice(0,5) + ' UTC';
+      return `
+      <div class="event-panel-card">
+        ${e.imageUrl
+          ? `<img class="event-panel-banner" src="${e.imageUrl}" onerror="this.style.display='none'" alt="">`
+          : `<div class="event-panel-banner-fallback">IVAO TH</div>`}
+        <div class="event-panel-body">
+          <div class="event-panel-title">${e.title}</div>
+          <div class="event-panel-meta">${dateStr} • ${timeStr}</div>
+          <div class="event-panel-airports">
+            ${(e.airports || []).slice(0,3).map(a => `<span>${a}</span>`).join('')}
+          </div>
+          ${e.infoUrl ? `<a href="${e.infoUrl}" target="_blank" class="event-panel-link">Forum →</a>` : ''}
+        </div>
+      </div>`;
+    }).join('');
+
+    const panel = document.getElementById("eventPanel");
+    if (data.length === 0) {
+      wrap.innerHTML = onlineDay;
+    } else {
+      wrap.innerHTML = onlineDay + events;
+      if (panel) panel.style.display = "flex";
+    }
+
+  } catch (err) {
+    console.log("Event Panel Error:", err);
+  }
+}
+
+
+/* ===============================
    START
 ================================= */
 loadDashboard();
 loadSnapshot();
 loadLiveBoard();
 loadLiveAtc();
+loadEventPanel();
+
+window.closeEventPanel = closeEventPanel;
 
 setInterval(loadLiveAtc, 60000);
 window.loadLiveAtc = loadLiveAtc;
@@ -591,3 +657,4 @@ window.resetForm     = resetForm;
 window.toggleMode    = toggleMode;
 window.goToSection   = goToSection;
 window.scrollToTop   = scrollToTop;
+
