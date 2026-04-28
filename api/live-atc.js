@@ -11,9 +11,15 @@ const db = new Pool({
 })
 
 const ratingMap = {
-  1: 'OBS', 2: 'AS1', 3: 'AS2', 4: 'AS3',
-  5: 'C1', 6: 'C2', 7: 'C3', 8: 'I1',
-  9: 'I2', 10: 'I3', 11: 'SUP', 12: 'ADM'
+  1: 'AS1',
+  2: 'AS2', 
+  3: 'AS3',
+  4: 'ADC',
+  5: 'APC',
+  6: 'ACC',
+  7: 'SEC',
+  8: 'SAI',
+  9: 'CAI'
 }
 
 export default async function handler(req, res) {

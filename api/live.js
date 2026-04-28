@@ -10,6 +10,12 @@ const db = new Pool({
   ssl: false
 })
 
+const pilotRatingMap = {
+  1: 'FS1', 2: 'FS2', 3: 'FS3',
+  4: 'PP',  5: 'SPP', 6: 'CP',
+  7: 'ATP', 8: 'SFI', 9: 'CFI'
+}
+
 async function getAirlineLogo(icao) {
   try {
     const logoRes = await fetch(`https://api.ivao.aero/v2/airlines/${icao}/logo`, {
@@ -30,7 +36,7 @@ export default async function handler(req, res) {
   try {
     const { rows } = await db.query(`
       SELECT
-        session_id, callsign, user_id,
+        session_id, callsign, user_id, rating,
         departure, arrival, last_state,
         connected_at, aircraft_id
       FROM pilot_sessions
@@ -58,6 +64,7 @@ export default async function handler(req, res) {
           last_state: row.last_state || '',
           aircraft: row.aircraft_id,
           connected_at: row.connected_at,
+          rating: pilotRatingMap[row.rating] || '',
           logo
         }
       })

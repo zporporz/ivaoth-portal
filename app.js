@@ -160,6 +160,7 @@ ${rows.map(r => {
 <div class="subline">
 <span class="aircraft-chip">${r.aircraft_id || "-"}</span>
 <span class="vid-chip">VID ${r.user_id}</span>
+<span class="aircraft-chip">${r.rating || ''}</span>
 </div>
 </div>
 </td>
