@@ -16,7 +16,7 @@ export default async function handler(req, res) {
     const { rows } = await db.query(`
       SELECT EXTRACT(HOUR FROM connected_at)::int AS hour, COUNT(*)::int AS total
       FROM pilot_sessions
-      WHERE connected_at >= now() - interval '24 hours'
+      WHERE connected_at >= date_trunc('day', now() AT TIME ZONE 'UTC')
         AND (departure LIKE 'VT%' OR arrival LIKE 'VT%')
       GROUP BY hour
       ORDER BY hour
