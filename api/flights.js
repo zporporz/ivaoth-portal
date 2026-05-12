@@ -22,7 +22,6 @@ export default async function handler(req, res) {
       return res.status(400).json({ error: 'No airports specified' })
     }
 
-    // Fetch traffics for each airport in parallel
     const results = await Promise.all(
       icaoList.map(icao =>
         fetch(
@@ -32,15 +31,14 @@ export default async function handler(req, res) {
       )
     )
 
-    // IVAO returns { inbound: [...], outbound: [...], flightover: [...] }
     const seen = new Set()
     const rows = []
 
     for (let i = 0; i < icaoList.length; i++) {
       const data = results[i] || {}
 
-      const inbound   = Array.isArray(data.inbound)   ? data.inbound   : []
-      const outbound  = Array.isArray(data.outbound)  ? data.outbound  : []
+      const inbound    = Array.isArray(data.inbound)    ? data.inbound    : []
+      const outbound   = Array.isArray(data.outbound)   ? data.outbound   : []
       const flightover = Array.isArray(data.flightover) ? data.flightover : []
 
       const allFlights = [
@@ -52,7 +50,6 @@ export default async function handler(req, res) {
       for (const { flight, dir } of allFlights) {
         if (!flight) continue
 
-        // Filter by dep/arr if not airport mode
         if (!airports) {
           const flightDep = (flight.flightPlan?.departureId || '').toUpperCase()
           const flightArr = (flight.flightPlan?.arrivalId || '').toUpperCase()
@@ -72,6 +69,17 @@ export default async function handler(req, res) {
         seen.add(key)
 
         const fp = flight.flightPlan || {}
+        const state = (flight.lastTrack?.state || '').trim()
+        const onlineNow = new Date(from) <= new Date() && new Date(to) >= new Date()
+
+        // Determine status
+        let status = 'offline'
+        if (onlineNow && state && !['On Blocks', 'Landed'].includes(state)) {
+          status = 'online'
+        }
+
+        // Duration from `time` field (seconds)
+        const durationSec = flight.time || null
 
         rows.push({
           session_id: flight.id,
@@ -82,9 +90,10 @@ export default async function handler(req, res) {
           arrival: fp.arrivalId || null,
           connected_at: flight.createdAt,
           departed_at: null,
-          landed_at: null,
-          status: 'offline',
-          last_state: flight.lastTrack?.state || '',
+          landed_at: state === 'On Blocks' || state === 'Landed' ? true : null,
+          status,
+          last_state: state,
+          duration_sec: durationSec,
           direction: dir
         })
       }
@@ -97,3 +106,4 @@ export default async function handler(req, res) {
     res.status(500).json({ error: err.message })
   }
 }
+
