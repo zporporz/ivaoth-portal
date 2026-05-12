@@ -29,7 +29,11 @@ export default async function handler(req, res) {
         fetch(
           `https://api.ivao.aero/v2/airports/${icao}/traffics?from=${encodeURIComponent(from)}&to=${encodeURIComponent(to)}`,
           { headers: { 'apiKey': process.env.IVAO_API_KEY } }
-        ).then(r => r.ok ? r.json() : []).catch(() => [])
+        ).then(async r => {
+  const text = await r.text()
+  console.log('IVAO response:', r.status, text.slice(0, 500))
+  try { return JSON.parse(text) } catch { return [] }
+}).catch(e => { console.log('fetch error:', e.message); return [] })
       )
     )
 
