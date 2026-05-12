@@ -192,6 +192,17 @@
   </div>
 </main>
 
+
+<!-- SESSION MODAL -->
+<div id="sessionModal" style="display:none;position:fixed;inset:0;z-index:1000;background:rgba(0,0,0,.7);align-items:center;justify-content:center;padding:20px;">
+  <div style="background:#0d1a2d;border:1px solid #1e3555;border-radius:22px;width:100%;max-width:640px;max-height:90vh;overflow-y:auto;padding:28px;">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;">
+      <h3 id="sessionTitle" style="font-size:22px;"></h3>
+      <button onclick="closeSession()" style="background:none;border:none;color:#9bb2d3;font-size:24px;cursor:pointer;padding:0;">×</button>
+    </div>
+    <div id="sessionBody"></div>
+  </div>
+</div>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>

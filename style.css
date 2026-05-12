@@ -990,3 +990,60 @@ width:100%;
 position:static;
 }
 }
+
+/* ===============================
+SESSION MODAL
+=============================== */
+
+.session-grid{
+display:grid;
+grid-template-columns:repeat(3,1fr);
+gap:12px;
+margin-bottom:18px;
+}
+
+.session-block{
+background:#081423;
+border-radius:14px;
+padding:14px;
+border:1px solid #1b3557;
+}
+
+.session-block small{
+color:var(--muted);
+font-size:12px;
+}
+
+.session-val{
+font-size:18px;
+font-weight:700;
+margin-top:4px;
+}
+
+.session-route{
+background:#081423;
+border-radius:14px;
+padding:14px;
+border:1px solid #1b3557;
+margin-bottom:12px;
+}
+
+.session-route small{
+color:var(--muted);
+font-size:12px;
+}
+
+.route-text{
+margin-top:8px;
+font-size:13px;
+color:#9db5d8;
+word-break:break-all;
+line-height:1.6;
+font-family:monospace;
+}
+
+@media(max-width:600px){
+.session-grid{
+grid-template-columns:repeat(2,1fr);
+}
+}

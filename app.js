@@ -174,7 +174,7 @@ ${rows.map(r => {
 <tr>
 <td>
 <div class="flight-box">
-<a href="https://tracker.ivao.aero/sessions/${r.session_id}" target="_blank" class="trk-link">${r.callsign}</a>
+<a href="javascript:void(0)" onclick="openSession(${r.session_id},'${r.callsign}')" class="trk-link">${r.callsign}</a>
 <div class="subline">
 <span class="aircraft-chip">${r.aircraft_id || "-"}</span>
 <span class="vid-chip">VID ${r.user_id}</span>
@@ -280,7 +280,7 @@ ${pageData.map(r => `
 <div class="flight-box">
   <div style="display:flex;align-items:center;gap:10px;">
     ${r.logo ? `<img src="${r.logo}" style="width:28px;height:28px;object-fit:contain;border-radius:6px;">` : ''}
-    <a href="https://tracker.ivao.aero/sessions/${r.session_id}" target="_blank" class="trk-link">${r.callsign}</a>
+    <a href="javascript:void(0)" onclick="openSession(${r.session_id},'${r.callsign}')" class="trk-link">${r.callsign}</a>
   </div>
   <div class="subline">
     <span class="vid-chip">VID ${r.user_id}</span>
@@ -348,7 +348,7 @@ async function loadLiveAtc() {
 <tbody>
 ${data.map(r => `
 <tr>
-<td><a href="https://tracker.ivao.aero/sessions/${r.session_id}" target="_blank" class="trk-link">${r.callsign}</a></td>
+<td><a href="javascript:void(0)" onclick="openSession(${r.session_id},'${r.callsign}')" class="trk-link">${r.callsign}</a></td>
 <td><span class="aircraft-chip">${r.airport}</span></td>
 <td><span class="badge cyan">${r.station}</span></td>
 <td><span class="badge blue">${r.rating}</span></td>
@@ -499,6 +499,96 @@ function getDisplayState(f) {
   if (!state) return "ONLINE";
   return state.toUpperCase();
 }
+
+/* ===============================
+   SESSION MODAL
+================================= */
+async function openSession(sessionId, callsign) {
+  const modal = document.getElementById("sessionModal");
+  const body  = document.getElementById("sessionBody");
+  document.getElementById("sessionTitle").innerText = callsign;
+  body.innerHTML = '<div class="msg">Loading...</div>';
+  modal.style.display = "flex";
+
+  try {
+    const res  = await fetch(`${API}/api/session?id=${sessionId}`);
+    const d    = await res.json();
+
+    const formatAlt = a => a ? `${a.toLocaleString()} ft` : "-";
+    const formatSpd = s => s ? `${s} kts` : "-";
+
+    body.innerHTML = `
+<div class="session-grid">
+  <div class="session-block">
+    <small>Pilot</small>
+    <div class="session-val">${d.name || 'VID ' + d.user_id}</div>
+    <div class="subline" style="margin-top:4px">
+      <span class="aircraft-chip">${d.pilot_rating || '-'}</span>
+      <span class="vid-chip">${d.division || ''}</span>
+      <span class="vid-chip">VID ${d.user_id}</span>
+    </div>
+  </div>
+  <div class="session-block">
+    <small>Simulator</small>
+    <div class="session-val">${d.simulator || '-'}</div>
+  </div>
+  <div class="session-block">
+    <small>Route</small>
+    <div class="route-box" style="font-size:20px;font-weight:800;">
+      <span>${d.departure || '---'}</span>
+      <span class="arrow">→</span>
+      <span>${d.arrival || '---'}</span>
+    </div>
+  </div>
+  <div class="session-block">
+    <small>Aircraft</small>
+    <div class="session-val">${d.aircraft || '-'}</div>
+  </div>
+  <div class="session-block">
+    <small>Altitude</small>
+    <div class="session-val">${formatAlt(d.altitude)}</div>
+  </div>
+  <div class="session-block">
+    <small>Ground Speed</small>
+    <div class="session-val">${formatSpd(d.ground_speed)}</div>
+  </div>
+  <div class="session-block">
+    <small>Heading</small>
+    <div class="session-val">${d.heading ? d.heading + '°' : '-'}</div>
+  </div>
+  <div class="session-block">
+    <small>State</small>
+    <div>${d.state ? `<span class="badge cyan">${d.state}</span>` : '-'}</div>
+  </div>
+  ${d.cruise_altitude ? `<div class="session-block"><small>Planned Altitude</small><div class="session-val">${d.cruise_altitude}</div></div>` : ''}
+  ${d.cruise_speed    ? `<div class="session-block"><small>Planned Speed</small><div class="session-val">${d.cruise_speed}</div></div>` : ''}
+</div>
+${d.route ? `
+<div class="session-route">
+  <small>Route</small>
+  <div class="route-text">${d.route}</div>
+</div>` : ''}
+${d.remarks ? `
+<div class="session-route">
+  <small>Remarks</small>
+  <div class="route-text" style="font-size:11px;opacity:.7">${d.remarks}</div>
+</div>` : ''}
+<div style="margin-top:18px;text-align:right">
+  <a href="https://tracker.ivao.aero/sessions/${d.session_id}" target="_blank" class="btn-main" style="text-decoration:none;padding:10px 18px;border-radius:12px;font-size:13px;">
+    Open in IVAO Tracker →
+  </a>
+</div>`;
+  } catch (err) {
+    body.innerHTML = '<div class="msg">Failed to load session.</div>';
+  }
+}
+
+function closeSession() {
+  document.getElementById("sessionModal").style.display = "none";
+}
+
+window.openSession  = openSession;
+window.closeSession = closeSession;
 
 /* ===============================
    START
