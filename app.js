@@ -134,7 +134,7 @@ function applyFilter() {
     ? latestData.filter(r => {
         const state = (r.last_state || "").trim().toLowerCase();
         const isCircuit = r.departure && r.arrival && r.departure === r.arrival;
-        const isMissing = state && state !== "on blocks" && state !== "landed" && !(isCircuit && state === "ground");
+        const isMissing = state && state !== "on blocks" && state !== "landed" && !(isCircuit && (state === "ground" || state === "boarding"));
         return !isMissing;
       })
     : latestData;
@@ -158,7 +158,6 @@ function renderSearch(rows) {
 <th>Flight</th>
 <th>Route</th>
 <th>Connected</th>
-<th>Duration</th>
 <th>Status</th>
 </tr>
 </thead>
@@ -169,17 +168,7 @@ ${rows.map(r => {
     ? new Date(r.connected_at).toISOString().replace("T"," ").slice(0,16)
     : "-";
 
-  let duration = "-";
-  if (r.connected_at && r.search_to) {
-    const start = new Date(r.connected_at);
-    const end   = new Date(r.search_to);
-    const mins  = Math.floor((end - start) / 60000);
-    if (mins >= 0 && mins < 1440) {
-      const h = Math.floor(mins / 60);
-      const m = mins % 60;
-      duration = h + "h " + m + "m";
-    }
-  }
+
 
   return `
 <tr>
@@ -200,7 +189,6 @@ ${rows.map(r => {
 </div>
 </td>
 <td>${connected}</td>
-<td><span class="time-chip">${duration}</span></td>
 <td>${renderSearchStatus(r)}</td>
 </tr>`;
 
@@ -219,7 +207,7 @@ function renderSearchStatus(f) {
   if (state === "on blocks") return '<span class="badge green">ON BLOCKS</span>';
   if (state === "landed")    return '<span class="badge green">LANDED</span>';
   // circuit flight (dep=arr): ground = ลงแล้ว
-  if (isCircuit && state === "ground") return '<span class="badge green">ON BLOCKS</span>';
+  if (isCircuit && (state === "ground" || state === "boarding")) return '<span class="badge green">ON BLOCKS</span>';
   // offline แต่ไม่ได้ลง = MISSING
   if (state && state !== "on blocks" && state !== "landed") {
     return '<span class="badge red">MISSING</span>';
