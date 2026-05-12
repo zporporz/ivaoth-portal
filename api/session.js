@@ -15,14 +15,39 @@ export default async function handler(req, res) {
     if (!sessionRes.ok) return res.status(sessionRes.status).json({ error: `Session ${sessionRes.status}` })
 
     const session = await sessionRes.json()
-    console.log('softwareType:', JSON.stringify(session.softwareType))
-    console.log('user:', JSON.stringify(session.user))
     const fp      = fpRes.ok    ? await fpRes.json()    : null
     const track   = trackRes.ok ? await trackRes.json() : null
 
     const pilotRating = session.user?.rating?.pilotRating?.shortName || null
     const firstName   = session.user?.firstName || ''
     const lastName    = session.user?.lastName  || ''
+
+    const simMap = {
+      // softwareType
+      'Altitude/win':   'Altitude (Windows)',
+      'Altitude/mac':   'Altitude (Mac)',
+      // simulatorId (case variants)
+      'MSFS':           'MSFS 2020',
+      'MSFS2024':       'MSFS 2024',
+      'msfs':           'MSFS 2020',
+      'msfs2024':       'MSFS 2024',
+      'XP11':           'X-Plane 11',
+      'XP12':           'X-Plane 12',
+      'xplane11':       'X-Plane 11',
+      'xplane12':       'X-Plane 12',
+      'xplane':         'X-Plane',
+      'P3D':            'Prepar3D',
+      'P3Dv4':          'Prepar3D v4',
+      'P3Dv5':          'Prepar3D v5',
+      'p3dv4':          'Prepar3D v4',
+      'p3dv5':          'Prepar3D v5',
+      'FSX':            'FSX',
+      'fsx':            'FSX',
+      'FS9':            'FS2004',
+      'fs9':            'FS2004',
+    }
+    const rawSim = session.pilotSession?.simulatorId || session.softwareType?.name || null
+    const simName = rawSim ? (simMap[rawSim] || rawSim) : null
 
     res.json({
       session_id:      session.id,
@@ -31,7 +56,7 @@ export default async function handler(req, res) {
       name:            `${firstName} ${lastName}`.trim(),
       pilot_rating:    pilotRating,
       division:        session.user?.divisionId || null,
-      simulator:       session.softwareType?.name || null,
+      simulator:       simName,
       connected_at:    session.createdAt,
       completed_at:    session.completedAt || null,
       time:            session.time || null,
