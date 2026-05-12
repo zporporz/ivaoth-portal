@@ -196,16 +196,23 @@ ${rows.map(r => {
 ================================= */
 function renderStatus(f) {
   const state = (f.last_state || f.state || "").trim().toLowerCase();
-  if (state === "on blocks")  return '<span class="badge green">ON BLOCKS</span>';
-  if (state === "landed")     return '<span class="badge green">LANDED</span>';
-  if (state === "ground")     return '<span class="badge blue">GROUND</span>';
-  if (state === "departing")  return '<span class="badge blue">DEPARTING</span>';
-  if (state === "climbing")   return '<span class="badge cyan">CLIMBING</span>';
-  if (state === "en route")   return '<span class="badge yellow">EN ROUTE</span>';
-  if (state === "approach")   return '<span class="badge orange">APPROACH</span>';
-  if (f.status === "online")  return '<span class="badge cyan">ONLINE</span>';
-  if (f.status === "offline") return '<span class="badge red">OFFLINE</span>';
-  return '<span class="badge blue">ONLINE</span>';
+  // ลงปกติ
+  if (state === "on blocks") return '<span class="badge green">ON BLOCKS</span>';
+  if (state === "landed")    return '<span class="badge green">LANDED</span>';
+  // กำลังบินอยู่ (online)
+  if (f.status === "online") {
+    if (state === "ground")    return '<span class="badge blue">GROUND</span>';
+    if (state === "departing") return '<span class="badge blue">DEPARTING</span>';
+    if (state === "climbing")  return '<span class="badge cyan">CLIMBING</span>';
+    if (state === "en route")  return '<span class="badge yellow">EN ROUTE</span>';
+    if (state === "approach")  return '<span class="badge orange">APPROACH</span>';
+    return '<span class="badge cyan">ONLINE</span>';
+  }
+  // offline แต่ไม่ได้ลง = MISSING
+  if (f.status === "offline" && state && state !== "on blocks" && state !== "landed") {
+    return '<span class="badge red">MISSING</span>';
+  }
+  return '<span class="badge red">OFFLINE</span>';
 }
 
 /* ===============================
