@@ -81,7 +81,7 @@ async function searchFlights() {
     const res = await fetch(url);
     const data = await res.json();
 
-    latestData = data || [];
+    latestData = (data || []).map(r => ({ ...r, search_to: to }));
     const depVal = document.getElementById("modeSwitch").checked ? null : document.getElementById("dep").value.trim().toUpperCase();
     const arrVal = document.getElementById("modeSwitch").checked ? null : document.getElementById("arr").value.trim().toUpperCase();
     updateSearchStats(latestData, depVal, arrVal);
@@ -106,11 +106,9 @@ function updateSearchStats(rows, depFilter, arrFilter) {
   // If both or neither, show most common of each
   if (depFilter && !arrFilter) {
     document.getElementById("statDep").innerText = depFilter;
-    document.getElementById("statArr").innerText =
-      getMostCommon(rows.map(r => r.arrival).filter(x => x && x !== depFilter));
+    document.getElementById("statArr").innerText = "-";
   } else if (arrFilter && !depFilter) {
-    document.getElementById("statDep").innerText =
-      getMostCommon(rows.map(r => r.departure).filter(x => x && x !== arrFilter));
+    document.getElementById("statDep").innerText = "-";
     document.getElementById("statArr").innerText = arrFilter;
   } else {
     document.getElementById("statDep").innerText =
@@ -157,10 +155,15 @@ ${rows.map(r => {
     : "-";
 
   let duration = "-";
-  if (r.duration_sec && r.duration_sec > 0) {
-    const h = Math.floor(r.duration_sec / 3600);
-    const m = Math.floor((r.duration_sec % 3600) / 60);
-    duration = h + "h " + m + "m";
+  if (r.connected_at) {
+    const start = new Date(r.connected_at);
+    const end = new Date(Math.min(Date.now(), new Date(r.search_to || Date.now())));
+    const mins = Math.floor((end - start) / 60000);
+    if (mins > 0 && mins < 1440) {
+      const h = Math.floor(mins / 60);
+      const m = mins % 60;
+      duration = h + "h " + m + "m";
+    }
   }
 
   return `
@@ -199,20 +202,20 @@ function renderStatus(f) {
   // ลงปกติ
   if (state === "on blocks") return '<span class="badge green">ON BLOCKS</span>';
   if (state === "landed")    return '<span class="badge green">LANDED</span>';
-  // กำลังบินอยู่ (online)
-  if (f.status === "online") {
-    if (state === "ground")    return '<span class="badge blue">GROUND</span>';
-    if (state === "departing") return '<span class="badge blue">DEPARTING</span>';
-    if (state === "climbing")  return '<span class="badge cyan">CLIMBING</span>';
-    if (state === "en route")  return '<span class="badge yellow">EN ROUTE</span>';
-    if (state === "approach")  return '<span class="badge orange">APPROACH</span>';
-    return '<span class="badge cyan">ONLINE</span>';
-  }
-  // offline แต่ไม่ได้ลง = MISSING
-  if (f.status === "offline" && state && state !== "on blocks" && state !== "landed") {
+  // state บินอยู่
+  if (state === "ground")    return '<span class="badge blue">GROUND</span>';
+  if (state === "departing") return '<span class="badge blue">DEPARTING</span>';
+  if (state === "climbing")  return '<span class="badge cyan">CLIMBING</span>';
+  if (state === "en route")  return '<span class="badge yellow">EN ROUTE</span>';
+  if (state === "approach")  return '<span class="badge orange">APPROACH</span>';
+  // search results: offline แต่ไม่ได้ลง = MISSING
+  if (f.status === "offline" && state) {
     return '<span class="badge red">MISSING</span>';
   }
-  return '<span class="badge red">OFFLINE</span>';
+  if (f.status === "offline") return '<span class="badge red">OFFLINE</span>';
+  // live board: มี state หรือ online
+  if (state) return '<span class="badge cyan">ONLINE</span>';
+  return '<span class="badge blue">ONLINE</span>';
 }
 
 /* ===============================
