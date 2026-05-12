@@ -535,3 +535,4 @@ window.resetForm     = resetForm;
 window.toggleMode    = toggleMode;
 window.goToSection   = goToSection;
 window.scrollToTop   = scrollToTop;
+
