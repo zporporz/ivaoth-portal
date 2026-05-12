@@ -11,7 +11,7 @@ export default async function handler(req, res) {
     let icaoList = []
 
     if (airports) {
-      icaoList = airports.split(',').map(x => x.trim()).filter(Boolean)
+      icaoList = airports.split(',').map(x => x.trim().toUpperCase()).filter(Boolean)
     } else {
       const set = new Set()
       if (dep) set.add(dep.trim().toUpperCase())
@@ -38,35 +38,35 @@ export default async function handler(req, res) {
     const rows = []
 
     for (let i = 0; i < icaoList.length; i++) {
-      const icao = icaoList[i]
       const airportData = results[i]
-
-      // airportData is array of { inbound, outbound, flightover }
       const entries = Array.isArray(airportData) ? airportData : []
 
       for (const entry of entries) {
-        // Check each direction
         const candidates = []
-
-        if (entry.inbound) candidates.push({ flight: entry.inbound, dir: 'inbound' })
-        if (entry.outbound) candidates.push({ flight: entry.outbound, dir: 'outbound' })
+        if (entry.inbound)    candidates.push({ flight: entry.inbound,    dir: 'inbound' })
+        if (entry.outbound)   candidates.push({ flight: entry.outbound,   dir: 'outbound' })
         if (entry.flightover) candidates.push({ flight: entry.flightover, dir: 'flightover' })
 
         for (const { flight, dir } of candidates) {
           if (!flight) continue
 
-          // Filter by dep/arr if specified (not airport mode)
+          // Filter by dep/arr if not airport mode
           if (!airports) {
-            const flightDep = flight.flightPlan?.departureId || ''
-            const flightArr = flight.flightPlan?.arrivalId || ''
-            if (dep && arr) {
-              if (flightDep !== dep && flightArr !== dep) continue
-              if (flightArr !== arr && flightDep !== arr) continue
-            } else if (dep && flightDep !== dep) continue
-            else if (arr && flightArr !== arr) continue
+            const flightDep = (flight.flightPlan?.departureId || '').toUpperCase()
+            const flightArr = (flight.flightPlan?.arrivalId || '').toUpperCase()
+            const d = (dep || '').toUpperCase()
+            const a = (arr || '').toUpperCase()
+
+            if (d && a) {
+              // bidirectional: VTBD->VTSM หรือ VTSM->VTBD ก็ได้
+              const forward  = flightDep === d && flightArr === a
+              const backward = flightDep === a && flightArr === d
+              if (!forward && !backward) continue
+            } else if (d && flightDep !== d) continue
+            else if (a && flightArr !== a) continue
           }
 
-          const key = `${flight.id}-${dir}`
+          const key = `${flight.id}`
           if (seen.has(key)) continue
           seen.add(key)
 
