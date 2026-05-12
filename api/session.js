@@ -1,3 +1,6 @@
+console.log('softwareType:', JSON.stringify(session.softwareType))
+console.log('user:', JSON.stringify(session.user))
+
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*')
   const { id } = req.query
