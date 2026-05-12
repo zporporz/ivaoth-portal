@@ -1,6 +1,3 @@
-console.log('softwareType:', JSON.stringify(session.softwareType))
-console.log('user:', JSON.stringify(session.user))
-
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*')
   const { id } = req.query
@@ -18,6 +15,8 @@ export default async function handler(req, res) {
     if (!sessionRes.ok) return res.status(sessionRes.status).json({ error: `Session ${sessionRes.status}` })
 
     const session = await sessionRes.json()
+    console.log('softwareType:', JSON.stringify(session.softwareType))
+    console.log('user:', JSON.stringify(session.user))
     const fp      = fpRes.ok    ? await fpRes.json()    : null
     const track   = trackRes.ok ? await trackRes.json() : null
 
