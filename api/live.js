@@ -4,6 +4,21 @@ const pilotRatingMap = {
   8: 'ATP', 9: 'SFI', 10: 'CFI'
 }
 
+async function getAirlineLogo(icao) {
+  try {
+    const res = await fetch(`https://api.ivao.aero/v2/airlines/${icao}/logo`, {
+      headers: { 'apiKey': process.env.IVAO_API_KEY }
+    })
+    if (!res.ok) return null
+    const blob = await res.arrayBuffer()
+    const b64 = Buffer.from(blob).toString('base64')
+    const ct = res.headers.get('content-type') || 'image/png'
+    return `data:${ct};base64,${b64}`
+  } catch {
+    return null
+  }
+}
+
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*')
   try {
@@ -21,23 +36,28 @@ export default async function handler(req, res) {
       return dep.startsWith('VT') || arr.startsWith('VT')
     })
 
-    const enriched = thPilots.map(p => {
-      const fp = p.flightPlan || {}
-      const prefix = (p.callsign || '').slice(0, 3).toUpperCase()
+    const enriched = await Promise.all(
+      thPilots.map(async p => {
+        const fp = p.flightPlan || {}
+        const prefix = (p.callsign || '').slice(0, 3).toUpperCase()
+        const isAirline = /^[A-Z]{3}$/.test(prefix)
 
-      return {
-        session_id: p.id,
-        callsign: p.callsign,
-        user_id: p.userId,
-        departure: fp.departureId || null,
-        arrival: fp.arrivalId || null,
-        last_state: p.lastTrack?.state || '',
-        aircraft: fp.aircraftId || null,
-        connected_at: p.createdAt,
-        rating: pilotRatingMap[p.rating] || '',
-        logo: null
-      }
-    })
+        const logo = isAirline ? await getAirlineLogo(prefix) : null
+
+        return {
+          session_id: p.id,
+          callsign: p.callsign,
+          user_id: p.userId,
+          departure: fp.departureId || null,
+          arrival: fp.arrivalId || null,
+          last_state: p.lastTrack?.state || '',
+          aircraft: fp.aircraftId || null,
+          connected_at: p.createdAt,
+          rating: pilotRatingMap[p.rating] || '',
+          logo
+        }
+      })
+    )
 
     res.json(enriched)
   } catch (err) {
