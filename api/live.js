@@ -1,74 +1,43 @@
-import pkg from 'pg'
-const { Pool } = pkg
-
-const db = new Pool({
-  host: process.env.DB_HOST,
-  user: process.env.DB_USER,
-  password: process.env.DB_PASSWORD,
-  database: process.env.DB_NAME,
-  port: 5432,
-  ssl: false
-})
-
 const pilotRatingMap = {
   2: 'FS1', 3: 'FS2', 4: 'FS3',
   5: 'PP',  6: 'SPP', 7: 'CP',
   8: 'ATP', 9: 'SFI', 10: 'CFI'
 }
 
-async function getAirlineLogo(icao) {
-  try {
-    const logoRes = await fetch(`https://api.ivao.aero/v2/airlines/${icao}/logo`, {
-      headers: { 'apiKey': process.env.IVAO_API_KEY }
-    })
-    if (!logoRes.ok) return null
-    const blob = await logoRes.arrayBuffer()
-    const b64 = Buffer.from(blob).toString('base64')
-    const ct = logoRes.headers.get('content-type') || 'image/png'
-    return `data:${ct};base64,${b64}`
-  } catch {
-    return null
-  }
-}
-
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*')
   try {
-    const { rows } = await db.query(`
-      SELECT
-        session_id, callsign, user_id, rating,
-        departure, arrival, last_state,
-        connected_at, aircraft_id
-      FROM pilot_sessions
-      WHERE status = 'online'
-        AND (departure LIKE 'VT%' OR arrival LIKE 'VT%')
-      ORDER BY connected_at ASC
-    `)
+    const response = await fetch('https://api.ivao.aero/v2/tracker/whazzup', {
+      headers: { 'apiKey': process.env.IVAO_API_KEY }
+    })
+    if (!response.ok) throw new Error(`IVAO API ${response.status}`)
+    const data = await response.json()
 
-    const enriched = await Promise.all(
-      rows.map(async (row) => {
-        const prefix = (row.callsign || '').slice(0, 3).toUpperCase()
-        const isAirline = /^[A-Z]{3}$/.test(prefix)
+    const pilots = data.clients?.pilots || []
 
-        let logo = null
-        if (isAirline) {
-          logo = await getAirlineLogo(prefix)
-        }
+    const thPilots = pilots.filter(p => {
+      const dep = p.flightPlan?.departureId || ''
+      const arr = p.flightPlan?.arrivalId || ''
+      return dep.startsWith('VT') || arr.startsWith('VT')
+    })
 
-        return {
-          session_id: row.session_id,
-          callsign: row.callsign,
-          user_id: row.user_id,
-          departure: row.departure,
-          arrival: row.arrival,
-          last_state: row.last_state || '',
-          aircraft: row.aircraft_id,
-          connected_at: row.connected_at,
-          rating: pilotRatingMap[row.rating] || '',
-          logo
-        }
-      })
-    )
+    const enriched = thPilots.map(p => {
+      const fp = p.flightPlan || {}
+      const prefix = (p.callsign || '').slice(0, 3).toUpperCase()
+
+      return {
+        session_id: p.id,
+        callsign: p.callsign,
+        user_id: p.userId,
+        departure: fp.departureId || null,
+        arrival: fp.arrivalId || null,
+        last_state: p.lastTrack?.state || '',
+        aircraft: fp.aircraftId || null,
+        connected_at: p.createdAt,
+        rating: pilotRatingMap[p.rating] || '',
+        logo: null
+      }
+    })
 
     res.json(enriched)
   } catch (err) {

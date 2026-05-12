@@ -24,7 +24,6 @@
   <div class="nav">
     <a href="javascript:void(0)" class="active" onclick="goToSection('searchSection')">Search Flights</a>
     <a href="javascript:void(0)" onclick="goToSection('liveSection')">Live Board</a>
-    <a href="javascript:void(0)" onclick="goToSection('airportSection')">Flight Intelligence Snapshot</a>
     <a href="javascript:void(0)" onclick="goToSection('statsSection')">Statistics</a>
   </div>
   <div class="sidebar-links">
@@ -48,6 +47,7 @@
         <p>Historical IVAO Thailand traffic search & route intelligence</p>
       </div>
 
+      <!-- SEARCH -->
       <div class="panel" id="searchSection">
         <div class="search-grid">
           <div id="airportWrap" style="display:none;">
@@ -56,12 +56,12 @@
             <small class="hint">Separate multiple airports with commas</small>
           </div>
           <div id="depWrap">
-            <label>Departure ICAOs</label>
+            <label>Departure ICAO</label>
             <input id="dep" placeholder="VTBD">
             <small class="hint">Single ICAO code</small>
           </div>
           <div id="arrWrap">
-            <label>Arrival ICAOs</label>
+            <label>Arrival ICAO</label>
             <input id="arr" placeholder="VTSM">
             <small class="hint">Single ICAO code</small>
           </div>
@@ -108,6 +108,7 @@
         </div>
       </div>
 
+      <!-- SEARCH RESULTS -->
       <div id="resultSection" style="display:none;">
         <div class="stats">
           <div class="stat"><small>Flights Found</small><h2 id="statFlights">0</h2></div>
@@ -121,6 +122,7 @@
         </div>
       </div>
 
+      <!-- LIVE BOARD -->
       <div class="panel" id="liveSection">
         <div class="stats-head">
           <div>
@@ -151,35 +153,12 @@
         </div>
       </div>
 
-      <div class="panel" id="airportSection">
-        <div class="stats-head">
-          <div>
-            <h3>Flight Intelligence Snapshot</h3>
-            <p class="hint">Thailand traffic insights • Last 7 days</p>
-          </div>
-          <div class="live-meta">
-            <span class="live-dot"></span>
-            <span>Auto refresh 10 min</span>
-            <small id="snapshotUpdated">Updating...</small>
-          </div>
-        </div>
-        <div class="snapshot-grid">
-          <div class="stat">
-            <small>Top Airlines (7d)</small>
-            <div id="topAirlinesList" class="airline-list">Loading...</div>
-          </div>
-          <div class="stat">
-            <small>Traffic Trend (Today UTC)</small>
-            <canvas id="trendChart"></canvas>
-          </div>
-        </div>
-      </div>
-
+      <!-- STATISTICS -->
       <div class="panel" id="statsSection">
         <div class="stats-head">
           <div>
             <h3>Thailand Statistics</h3>
-            <p class="hint">Thai FIR / VT airports traffic only • Last 7 days</p>
+            <p class="hint">Thai FIR / VT airports • Real-time</p>
           </div>
           <div class="live-meta">
             <span class="live-dot"></span>
@@ -190,16 +169,12 @@
         <div class="stats" id="dashCards">
           <div class="stat live-card pilots"><small>Thailand Pilots Online</small><h2 id="dPilots">-</h2></div>
           <div class="stat live-card atc"><small>Thailand ATC Online</small><h2 id="dAtc">-</h2></div>
-          <div class="stat landed-card"><small>Thailand Landed Flights (7d)</small><h2 id="dLanded">-</h2></div>
-          <div class="stat missing-card"><small>Thailand Missing Flights (7d)</small><h2 id="dMissing">-</h2></div>
-        </div>
-        <div class="stats chart-grid">
-          <div class="stat"><small>Top Thailand Departures (7d)</small><canvas id="topDeps"></canvas></div>
-          <div class="stat"><small>Top Thailand Arrivals (7d)</small><canvas id="topArrs"></canvas></div>
         </div>
       </div>
+
     </div>
 
+    <!-- EVENT PANEL -->
     <div id="eventPanel" class="event-panel">
       <div class="event-panel-head">
         <span>Upcoming Events</span>
@@ -214,7 +189,6 @@
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="app.js"></script>
 <button id="topBtn" onclick="scrollToTop()">↑</button>
 </body>

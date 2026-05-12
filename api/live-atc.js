@@ -1,54 +1,42 @@
-import pkg from 'pg'
-const { Pool } = pkg
-
-const db = new Pool({
-  host: process.env.DB_HOST,
-  user: process.env.DB_USER,
-  password: process.env.DB_PASSWORD,
-  database: process.env.DB_NAME,
-  port: 5432,
-  ssl: false
-})
-
 const ratingMap = {
-  2: 'AS1',
-  3: 'AS2', 
-  4: 'AS3',
-  5: 'ADC',
-  6: 'APC',
-  7: 'ACC',
-  8: 'SEC',
-  9: 'SAI',
-  10: 'CAI'
+  2: 'AS1', 3: 'AS2', 4: 'AS3',
+  5: 'ADC', 6: 'APC', 7: 'ACC',
+  8: 'SEC', 9: 'SAI', 10: 'CAI'
 }
 
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*')
   try {
-    const { rows } = await db.query(`
-      SELECT session_id, callsign, user_id, rating, connected_at
-      FROM atc_sessions
-      WHERE status = 'online'
-        AND callsign LIKE 'VT%'
-      ORDER BY callsign ASC
-    `)
-
-    const data = rows.map(row => {
-      const parts = (row.callsign || '').split('_')
-      const airport = parts[0] || ''
-      const station = parts[1] || ''
-      return {
-        session_id: row.session_id,
-        callsign: row.callsign,
-        user_id: row.user_id,
-        airport,
-        station,
-        rating: ratingMap[row.rating] || `C${row.rating}`,
-        connected_at: row.connected_at
-      }
+    const response = await fetch('https://api.ivao.aero/v2/tracker/whazzup', {
+      headers: { 'apiKey': process.env.IVAO_API_KEY }
     })
+    if (!response.ok) throw new Error(`IVAO API ${response.status}`)
+    const data = await response.json()
 
-    res.json(data)
+    const atcs = data.clients?.atcs || []
+
+    const thAtcs = atcs.filter(a =>
+      (a.callsign || '').startsWith('VT')
+    )
+
+    const result = thAtcs
+      .sort((a, b) => (a.callsign || '').localeCompare(b.callsign || ''))
+      .map(a => {
+        const parts = (a.callsign || '').split('_')
+        const airport = parts[0] || ''
+        const station = parts[1] || ''
+        return {
+          session_id: a.id,
+          callsign: a.callsign,
+          user_id: a.userId,
+          airport,
+          station,
+          rating: ratingMap[a.rating] || `C${a.rating}`,
+          connected_at: a.createdAt
+        }
+      })
+
+    res.json(result)
   } catch (err) {
     res.status(500).json({ error: err.message })
   }

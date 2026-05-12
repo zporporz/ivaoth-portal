@@ -1,15 +1,3 @@
-import pkg from 'pg'
-const { Pool } = pkg
-
-const db = new Pool({
-  host: process.env.DB_HOST,
-  user: process.env.DB_USER,
-  password: process.env.DB_PASSWORD,
-  database: process.env.DB_NAME,
-  port: 5432,
-  ssl: false
-})
-
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*')
   const { from, to, dep, arr, airports } = req.query
@@ -19,33 +7,92 @@ export default async function handler(req, res) {
   }
 
   try {
-    let query = `
-      SELECT session_id, user_id, callsign, aircraft_id,
-             departure, arrival, connected_at,
-             departed_at, landed_at, status, last_state
-      FROM pilot_sessions
-      WHERE connected_at >= $1
-        AND connected_at <= $2
-        AND (departure LIKE 'VT%' OR arrival LIKE 'VT%')
-    `
-    const params = [from, to]
+    // Build list of airports to query
+    let icaoList = []
 
     if (airports) {
-      const list = airports.split(',').filter(Boolean)
-      if (list.length > 0) {
-        const depOr = list.map((_, i) => `departure = $${params.length + i + 1}`).join(' OR ')
-        const arrOr = list.map((_, i) => `arrival = $${params.length + list.length + i + 1}`).join(' OR ')
-        query += ` AND (${depOr} OR ${arrOr})`
-        params.push(...list, ...list)
-      }
+      icaoList = airports.split(',').map(x => x.trim()).filter(Boolean)
     } else {
-      if (dep) { query += ` AND departure = $${params.length + 1}`; params.push(dep) }
-      if (arr) { query += ` AND arrival = $${params.length + 1}`; params.push(arr) }
+      const set = new Set()
+      if (dep) set.add(dep.trim().toUpperCase())
+      if (arr) set.add(arr.trim().toUpperCase())
+      icaoList = [...set]
     }
 
-    query += ` ORDER BY connected_at DESC LIMIT 2000`
+    if (icaoList.length === 0) {
+      return res.status(400).json({ error: 'No airports specified' })
+    }
 
-    const { rows } = await db.query(query, params)
+    // Fetch traffics for each airport in parallel
+    const results = await Promise.all(
+      icaoList.map(icao =>
+        fetch(
+          `https://api.ivao.aero/v2/airports/${icao}/traffics?from=${encodeURIComponent(from)}&to=${encodeURIComponent(to)}`,
+          { headers: { 'apiKey': process.env.IVAO_API_KEY } }
+        ).then(r => r.ok ? r.json() : []).catch(() => [])
+      )
+    )
+
+    // Merge & deduplicate by session id
+    const seen = new Set()
+    const rows = []
+
+    for (let i = 0; i < icaoList.length; i++) {
+      const icao = icaoList[i]
+      const airportData = results[i]
+
+      // airportData is array of { inbound, outbound, flightover }
+      const entries = Array.isArray(airportData) ? airportData : []
+
+      for (const entry of entries) {
+        // Check each direction
+        const candidates = []
+
+        if (entry.inbound) candidates.push({ flight: entry.inbound, dir: 'inbound' })
+        if (entry.outbound) candidates.push({ flight: entry.outbound, dir: 'outbound' })
+        if (entry.flightover) candidates.push({ flight: entry.flightover, dir: 'flightover' })
+
+        for (const { flight, dir } of candidates) {
+          if (!flight) continue
+
+          // Filter by dep/arr if specified (not airport mode)
+          if (!airports) {
+            const flightDep = flight.flightPlan?.departureId || ''
+            const flightArr = flight.flightPlan?.arrivalId || ''
+            if (dep && arr) {
+              if (flightDep !== dep && flightArr !== dep) continue
+              if (flightArr !== arr && flightDep !== arr) continue
+            } else if (dep && flightDep !== dep) continue
+            else if (arr && flightArr !== arr) continue
+          }
+
+          const key = `${flight.id}-${dir}`
+          if (seen.has(key)) continue
+          seen.add(key)
+
+          const fp = flight.flightPlan || {}
+
+          rows.push({
+            session_id: flight.id,
+            user_id: flight.userId,
+            callsign: flight.callsign,
+            aircraft_id: fp.aircraftId || null,
+            departure: fp.departureId || null,
+            arrival: fp.arrivalId || null,
+            connected_at: flight.createdAt,
+            departed_at: null,
+            landed_at: null,
+            status: 'offline',
+            last_state: flight.lastTrack?.state || '',
+            direction: dir
+          })
+        }
+      }
+    }
+
+    // Sort newest first
+    rows.sort((a, b) => new Date(b.connected_at) - new Date(a.connected_at))
+
     res.json(rows)
   } catch (err) {
     res.status(500).json({ error: err.message })
