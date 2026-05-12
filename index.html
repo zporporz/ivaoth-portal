@@ -117,7 +117,13 @@
           <div class="stat"><small>Main Arrival</small><h2 id="statArr">-</h2></div>
         </div>
         <div class="panel">
-          <h3>Flight Search Results</h3>
+          <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;margin-bottom:16px;">
+            <h3>Flight Search Results</h3>
+            <label class="option-item" style="font-size:13px;cursor:pointer;">
+              <input type="checkbox" id="hideMissing" onchange="applyFilter()">
+              Hide MISSING
+            </label>
+          </div>
           <div id="results"></div>
         </div>
       </div>
