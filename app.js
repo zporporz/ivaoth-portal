@@ -128,6 +128,21 @@ function getMostCommon(arr) {
 /* ===============================
    RENDER SEARCH
 ================================= */
+function applyFilter() {
+  const hide = document.getElementById("hideMissing")?.checked;
+  const filtered = hide
+    ? latestData.filter(r => {
+        const state = (r.last_state || "").trim().toLowerCase();
+        const isCircuit = r.departure && r.arrival && r.departure === r.arrival;
+        const isMissing = state && state !== "on blocks" && state !== "landed" && !(isCircuit && state === "ground");
+        return !isMissing;
+      })
+    : latestData;
+  // update flight count only (not unique pilots/dep/arr)
+  document.getElementById("statFlights").innerText = filtered.length;
+  renderSearch(filtered);
+}
+
 function renderSearch(rows) {
   const wrap = document.getElementById("results");
 
@@ -195,9 +210,12 @@ ${rows.map(r => {
 // สำหรับ search results (historical)
 function renderSearchStatus(f) {
   const state = (f.last_state || "").trim().toLowerCase();
+  const isCircuit = f.departure && f.arrival && f.departure === f.arrival;
   if (state === "on blocks") return '<span class="badge green">ON BLOCKS</span>';
   if (state === "landed")    return '<span class="badge green">LANDED</span>';
-  // offline = disconnect ไปแล้ว ถ้ายังไม่ลง = MISSING
+  // circuit flight (dep=arr): ground = ลงแล้ว
+  if (isCircuit && state === "ground") return '<span class="badge green">ON BLOCKS</span>';
+  // offline แต่ไม่ได้ลง = MISSING
   if (state && state !== "on blocks" && state !== "landed") {
     return '<span class="badge red">MISSING</span>';
   }
