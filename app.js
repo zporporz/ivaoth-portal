@@ -133,8 +133,8 @@ function applyFilter() {
   const filtered = hide
     ? latestData.filter(r => {
         const state = (r.last_state || "").trim().toLowerCase();
-        const isCircuit = r.departure && r.arrival && r.departure === r.arrival;
-        const isMissing = state && state !== "on blocks" && state !== "landed" && !(isCircuit && (state === "ground" || state === "boarding"));
+        const nearArrival = r.arrival_distance !== null && r.arrival_distance < 3;
+        const isMissing = state && state !== "on blocks" && state !== "landed" && !nearArrival;
         return !isMissing;
       })
     : latestData;
@@ -203,15 +203,14 @@ ${rows.map(r => {
 // สำหรับ search results (historical)
 function renderSearchStatus(f) {
   const state = (f.last_state || "").trim().toLowerCase();
-  const isCircuit = f.departure && f.arrival && f.departure === f.arrival;
   if (state === "on blocks") return '<span class="badge green">ON BLOCKS</span>';
   if (state === "landed")    return '<span class="badge green">LANDED</span>';
-  // circuit flight (dep=arr): ground = ลงแล้ว
-  if (isCircuit && (state === "ground" || state === "boarding")) return '<span class="badge green">ON BLOCKS</span>';
-  // offline แต่ไม่ได้ลง = MISSING
-  if (state && state !== "on blocks" && state !== "landed") {
-    return '<span class="badge red">MISSING</span>';
+  // ถ้า arrivalDistance < 3 NM = ถึงปลายทางแล้ว ถือว่า landed
+  if (f.arrival_distance !== null && f.arrival_distance < 3) {
+    return '<span class="badge green">ON BLOCKS</span>';
   }
+  // offline แต่ไม่ถึงปลายทาง = MISSING
+  if (state) return '<span class="badge red">MISSING</span>';
   return '<span class="badge red">OFFLINE</span>';
 }
 
