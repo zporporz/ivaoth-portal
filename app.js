@@ -82,7 +82,9 @@ async function searchFlights() {
     const data = await res.json();
 
     latestData = data || [];
-    updateSearchStats(latestData);
+    const depVal = document.getElementById("modeSwitch").checked ? null : document.getElementById("dep").value.trim().toUpperCase();
+    const arrVal = document.getElementById("modeSwitch").checked ? null : document.getElementById("arr").value.trim().toUpperCase();
+    updateSearchStats(latestData, depVal, arrVal);
     renderSearch(latestData);
 
   } catch (err) {
@@ -94,14 +96,28 @@ async function searchFlights() {
 /* ===============================
    SEARCH SUMMARY CARDS
 ================================= */
-function updateSearchStats(rows) {
+function updateSearchStats(rows, depFilter, arrFilter) {
   document.getElementById("statFlights").innerText = rows.length;
   document.getElementById("statPilots").innerText =
     new Set(rows.map(r => r.user_id).filter(Boolean)).size;
-  document.getElementById("statDep").innerText =
-    getMostCommon(rows.map(r => r.departure).filter(Boolean));
-  document.getElementById("statArr").innerText =
-    getMostCommon(rows.map(r => r.arrival).filter(Boolean));
+
+  // If only dep given, show most common arrival (not dep)
+  // If only arr given, show most common departure (not arr)
+  // If both or neither, show most common of each
+  if (depFilter && !arrFilter) {
+    document.getElementById("statDep").innerText = depFilter;
+    document.getElementById("statArr").innerText =
+      getMostCommon(rows.map(r => r.arrival).filter(x => x && x !== depFilter));
+  } else if (arrFilter && !depFilter) {
+    document.getElementById("statDep").innerText =
+      getMostCommon(rows.map(r => r.departure).filter(x => x && x !== arrFilter));
+    document.getElementById("statArr").innerText = arrFilter;
+  } else {
+    document.getElementById("statDep").innerText =
+      getMostCommon(rows.map(r => r.departure).filter(Boolean));
+    document.getElementById("statArr").innerText =
+      getMostCommon(rows.map(r => r.arrival).filter(Boolean));
+  }
 }
 
 function getMostCommon(arr) {
@@ -141,12 +157,6 @@ ${rows.map(r => {
     : "-";
 
   let duration = "-";
-  if (r.connected_at) {
-    const mins = Math.floor((Date.now() - new Date(r.connected_at)) / 60000);
-    const h = Math.floor(mins / 60);
-    const m = mins % 60;
-    duration = h + "h " + m + "m";
-  }
 
   return `
 <tr>
