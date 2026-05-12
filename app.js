@@ -170,10 +170,15 @@ ${rows.map(r => {
     : "-";
 
   let duration = "-";
-  if (r.duration_sec && r.duration_sec > 0 && r.duration_sec < 86400) {
-    const h = Math.floor(r.duration_sec / 3600);
-    const m = Math.floor((r.duration_sec % 3600) / 60);
-    duration = h + "h " + m + "m";
+  if (r.connected_at && r.search_to) {
+    const start = new Date(r.connected_at);
+    const end   = new Date(r.search_to);
+    const mins  = Math.floor((end - start) / 60000);
+    if (mins >= 0 && mins < 1440) {
+      const h = Math.floor(mins / 60);
+      const m = mins % 60;
+      duration = h + "h " + m + "m";
+    }
   }
 
   return `
