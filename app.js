@@ -476,10 +476,10 @@ loadEventPanel();
 
 window.closeEventPanel = closeEventPanel;
 
-setInterval(loadLiveAtc, 60000);
+setInterval(loadLiveAtc, 300000);
 window.loadLiveAtc = loadLiveAtc;
 
-setInterval(loadLiveBoard, 60000);
+setInterval(loadLiveBoard, 300000);
 setInterval(loadDashboard, 600000);
 
 window.searchFlights = searchFlights;
