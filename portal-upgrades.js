@@ -20,6 +20,20 @@ function getSpecialEvent(events){
   return events.find(e => !isRoutineEvent(e)) || null;
 }
 
+function getSessionProgress(state){
+  const s = (state || '').trim().toLowerCase();
+
+  if(s === 'on blocks' || s === 'landed') return 100;
+  if(s === 'approach') return 85;
+  if(s === 'descent' || s === 'descending') return 75;
+  if(s === 'en route' || s === 'cruise') return 55;
+  if(s === 'climbing') return 32;
+  if(s === 'departing') return 18;
+  if(s === 'ground') return 10;
+
+  return 35;
+}
+
 function injectHotNavigation(){
   const nav = document.querySelector('.nav');
   if(!nav || document.getElementById('eventModeNav')) return;
@@ -281,6 +295,7 @@ function enhanceSessionModal(){
       const alt = d.altitude ? `${d.altitude.toLocaleString()} ft` : '-';
       const spd = d.ground_speed ? `${d.ground_speed} kts` : '-';
       const hdg = d.heading ? `${d.heading}°` : '-';
+      const progress = getSessionProgress(d.state);
 
       body.innerHTML = `
       <div class="session-hero">
@@ -301,8 +316,8 @@ function enhanceSessionModal(){
             <span>${d.arrival || '---'}</span>
           </div>
 
-          <div class="session-progress">
-            <span style="width:${Math.min(92,Math.max(18,(d.ground_speed || 120)/6))}%"></span>
+          <div class="session-progress" title="Flight phase progress: ${progress}%">
+            <span style="width:${progress}%"></span>
           </div>
         </div>
 
