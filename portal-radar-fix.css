@@ -1,0 +1,51 @@
+/* ===============================
+   RADAR SWEEP FIX
+   Makes ATC coverage sweep circular instead of square/boxy.
+=============================== */
+
+.coverage-radar{
+  isolation:isolate;
+  background:
+    radial-gradient(circle at 50% 50%,rgba(25,195,125,.24) 0 4%,transparent 5% 100%),
+    radial-gradient(circle at 50% 50%,transparent 0 17%,rgba(47,124,255,.10) 18% 19%,transparent 20% 36%,rgba(47,124,255,.08) 37% 38%,transparent 39% 55%,rgba(47,124,255,.055) 56% 57%,transparent 58% 100%),
+    linear-gradient(135deg,#07111f,#0b1c32 60%,#091322);
+}
+
+.coverage-radar:before{
+  width:min(76vw,520px);
+  height:min(76vw,520px);
+  left:50%;
+  top:50%;
+  border-radius:50%;
+  background:
+    conic-gradient(from -18deg,
+      rgba(25,195,125,0) 0deg,
+      rgba(25,195,125,.04) 8deg,
+      rgba(25,195,125,.18) 20deg,
+      rgba(98,217,255,.28) 32deg,
+      rgba(25,195,125,0) 54deg,
+      rgba(25,195,125,0) 360deg);
+  filter:blur(.2px);
+  opacity:.95;
+  transform:translate(-50%,-50%) rotate(0deg);
+  transform-origin:center center;
+  z-index:0;
+  pointer-events:none;
+  mix-blend-mode:screen;
+}
+
+.coverage-radar:after{
+  z-index:1;
+  pointer-events:none;
+  border-radius:22px;
+}
+
+.coverage-radar > *{
+  position:absolute;
+  z-index:2;
+}
+
+@keyframes radarSweep{
+  from{transform:translate(-50%,-50%) rotate(0deg);}
+  to{transform:translate(-50%,-50%) rotate(360deg);}
+}
