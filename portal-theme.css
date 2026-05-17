@@ -1,0 +1,226 @@
+/* ===============================
+   LIGHT / DARK THEME TOGGLE
+=============================== */
+
+.theme-toggle{
+  margin-top:16px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:10px;
+  padding:12px 14px;
+  border-radius:14px;
+  border:1px solid rgba(125,180,255,.16);
+  background:rgba(255,255,255,.035);
+  color:#dbe8ff;
+  font-size:13px;
+  font-weight:800;
+}
+
+.theme-toggle button{
+  padding:8px 10px;
+  border-radius:10px;
+  background:#0a1627;
+  border:1px solid #1f395a;
+  color:#fff;
+  font-size:13px;
+}
+
+body.light-mode{
+  --bg:#edf4ff;
+  --panel:#ffffff;
+  --panel2:#f3f7ff;
+  --line:#c9d8ee;
+  --text:#0b1b30;
+  --muted:#526985;
+  --blue:#2563eb;
+  --blue2:#3b82f6;
+  --green:#0f9f6e;
+  --red:#dc2626;
+  background:
+    radial-gradient(circle at top right,rgba(59,130,246,.18) 0%,transparent 28%),
+    radial-gradient(circle at bottom left,rgba(15,159,110,.12) 0%,transparent 32%),
+    var(--bg);
+  color:var(--text);
+}
+
+body.light-mode .sidebar{
+  background:linear-gradient(180deg,#ffffff,#eaf2ff);
+  border-right:1px solid #c9d8ee;
+}
+
+body.light-mode .credit-box,
+body.light-mode .event-panel-head span,
+body.light-mode .hint,
+body.light-mode label,
+body.light-mode .live-meta,
+body.light-mode .event-panel-meta,
+body.light-mode .route-text,
+body.light-mode .session-block small,
+body.light-mode .session-route small,
+body.light-mode .session-data-card small,
+body.light-mode .session-status-row span:first-child{
+  color:#526985;
+}
+
+body.light-mode .nav a{
+  color:#18324f;
+}
+
+body.light-mode .nav a.active,
+body.light-mode .nav a:hover{
+  background:rgba(37,99,235,.10);
+}
+
+body.light-mode .panel,
+body.light-mode .stat,
+body.light-mode .live-col,
+body.light-mode .event-panel-card,
+body.light-mode .ops-card,
+body.light-mode .session-block,
+body.light-mode .session-route,
+body.light-mode .session-data-card{
+  background:linear-gradient(180deg,#ffffff,#f4f8ff);
+  border-color:#c9d8ee;
+  color:#0b1b30;
+  box-shadow:0 10px 26px rgba(18,52,89,.07);
+}
+
+body.light-mode .live-col-head{
+  background:#eaf2ff;
+  border-bottom:1px solid #c9d8ee;
+  color:#18324f;
+}
+
+body.light-mode input{
+  background:#ffffff;
+  border-color:#c9d8ee;
+  color:#0b1b30;
+}
+
+body.light-mode input:focus{
+  border-color:#2563eb;
+}
+
+body.light-mode .btn-ghost,
+body.light-mode .theme-toggle button{
+  background:#ffffff;
+  border-color:#bcd0eb;
+  color:#18324f;
+}
+
+body.light-mode .theme-toggle{
+  background:#f4f8ff;
+  border-color:#c9d8ee;
+  color:#18324f;
+}
+
+body.light-mode th{
+  color:#3867a7;
+}
+
+body.light-mode td,
+body.light-mode th,
+body.light-mode .pro-table td,
+body.light-mode .pro-table th{
+  border-bottom-color:rgba(24,50,79,.09);
+}
+
+body.light-mode .pro-table tr:hover{
+  background:rgba(37,99,235,.05);
+}
+
+body.light-mode .trk-link{
+  color:#245fd6;
+}
+
+body.light-mode .aircraft-chip{
+  background:#e3efff;
+  color:#245fd6;
+}
+
+body.light-mode .vid-chip{
+  background:#edf2f8;
+  color:#526985;
+}
+
+body.light-mode .time-chip{
+  background:#dff8ed;
+  color:#0f8a62;
+}
+
+body.light-mode .live-count{
+  background:#dbeafe;
+  color:#245fd6;
+}
+
+body.light-mode .msg{
+  background:#fff7ed;
+  border-color:#fed7aa;
+  color:#7c2d12;
+}
+
+body.light-mode .btn-forum{
+  background:#ffffff;
+  border-color:#bcd0eb;
+  color:#245fd6;
+}
+
+body.light-mode .event-panel-airports span{
+  background:#e3efff;
+  color:#245fd6;
+}
+
+body.light-mode #topBtn{
+  background:linear-gradient(135deg,#2563eb,#60a5fa);
+}
+
+body.light-mode #sessionModal{
+  background:rgba(15,23,42,.35)!important;
+}
+
+body.light-mode #sessionModal > div{
+  background:linear-gradient(180deg,#ffffff,#f4f8ff)!important;
+  border-color:#c9d8ee!important;
+}
+
+body.light-mode .session-identity{
+  background:linear-gradient(135deg,rgba(37,99,235,.10),#ffffff);
+  border-color:#bcd0eb;
+}
+
+body.light-mode .session-progress{
+  background:#e7eef8;
+  border-color:#c9d8ee;
+}
+
+body.light-mode .event-main-card{
+  background:linear-gradient(135deg,#ffffff,#f6f0ff);
+  border-color:rgba(147,51,234,.22);
+  color:#0b1b30;
+}
+
+body.light-mode .event-pill,
+body.light-mode .count-box,
+body.light-mode .ops-mini,
+body.light-mode .airport-focus,
+body.light-mode .coverage-node{
+  background:rgba(255,255,255,.72);
+  border-color:#c9d8ee;
+  color:#0b1b30;
+}
+
+body.light-mode .coverage-radar{
+  background:
+    radial-gradient(circle at 50% 50%,rgba(15,159,110,.22) 0 4%,transparent 5% 100%),
+    radial-gradient(circle at 50% 50%,transparent 0 17%,rgba(37,99,235,.12) 18% 19%,transparent 20% 36%,rgba(37,99,235,.09) 37% 38%,transparent 39% 55%,rgba(37,99,235,.06) 56% 57%,transparent 58% 100%),
+    linear-gradient(135deg,#eaf2ff,#ffffff 58%,#eef7ff);
+}
+
+body.light-mode .theme-toggle .mode-label:after{
+  content:'Light';
+}
+
+body:not(.light-mode) .theme-toggle .mode-label:after{
+  content:'Dark';
+}
