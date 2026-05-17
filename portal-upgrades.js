@@ -285,7 +285,7 @@ function enhanceSessionModal(){
       body.innerHTML = `
       <div class="session-hero">
 
-        <div class="session-identity">
+        <div class="session-identity" style="grid-column:1/-1;">
           <div class="event-kicker">Pilot Session Card</div>
           <div class="session-callsign">${d.callsign}</div>
 
@@ -304,11 +304,6 @@ function enhanceSessionModal(){
           <div class="session-progress">
             <span style="width:${Math.min(92,Math.max(18,(d.ground_speed || 120)/6))}%"></span>
           </div>
-        </div>
-
-        <div class="session-map-card">
-          <div class="map-route-line"></div>
-          <div class="map-plane">✈</div>
         </div>
 
       </div>
