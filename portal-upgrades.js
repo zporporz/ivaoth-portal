@@ -2,6 +2,24 @@
    PORTAL UI UPGRADES
 =============================== */
 
+function isRoutineEvent(event){
+  const title = (event?.title || '').toLowerCase();
+  const description = (event?.description || '').toLowerCase();
+  const text = `${title} ${description}`;
+
+  return !title ||
+    text.includes('online day') ||
+    text.includes('division online') ||
+    text.includes('weekly') ||
+    text.includes('every friday') ||
+    text.includes('friday online');
+}
+
+function getSpecialEvent(events){
+  if(!Array.isArray(events)) return null;
+  return events.find(e => !isRoutineEvent(e)) || null;
+}
+
 function injectHotNavigation(){
   const nav = document.querySelector('.nav');
   if(!nav || document.getElementById('eventModeNav')) return;
@@ -17,7 +35,7 @@ function injectHotNavigation(){
 
 async function buildEventOps(){
   const statsSection = document.getElementById('statsSection');
-  if(!statsSection || document.getElementById('eventOpsSection')) return;
+  if(!statsSection || document.getElementById('eventOpsSection')) return false;
 
   let events = [];
   let liveFlights = [];
@@ -27,6 +45,9 @@ async function buildEventOps(){
     events = await fetch('/api/events').then(r=>r.json());
   }catch{}
 
+  const activeEvent = getSpecialEvent(events);
+  if(!activeEvent) return false;
+
   try{
     liveFlights = await fetch('/api/live').then(r=>r.json());
   }catch{}
@@ -35,9 +56,8 @@ async function buildEventOps(){
     liveAtc = await fetch('/api/live-atc').then(r=>r.json());
   }catch{}
 
-  const activeEvent = Array.isArray(events) && events.length ? events[0] : null;
-
-  const eventAirports = activeEvent?.airports?.slice(0,4) || ['VTBS','VTBD','VTCC','VTSP'];
+  const eventAirports = activeEvent?.airports?.slice(0,4) || [];
+  if(!eventAirports.length) return false;
 
   const eventTraffic = liveFlights.filter(f =>
     eventAirports.includes(f.departure) || eventAirports.includes(f.arrival)
@@ -72,8 +92,8 @@ async function buildEventOps(){
     <div class="event-main-card">
       <div>
         <div class="event-kicker">Event Mode</div>
-        <div class="event-title">${activeEvent?.title || 'Division Online Day'}</div>
-        <div class="event-sub">${activeEvent?.description || 'Thailand Division realtime operations center with live traffic intelligence.'}</div>
+        <div class="event-title">${activeEvent.title}</div>
+        <div class="event-sub">${activeEvent.description || 'Thailand Division realtime operations center with live traffic intelligence.'}</div>
 
         <div class="event-meta-row">
           <div class="event-pill">Bangkok FIR</div>
@@ -120,7 +140,7 @@ async function buildEventOps(){
         <div class="freq-strip">
           ${atcOnline.slice(0,6).map(a => `
             <div class="freq-chip">${a.callsign}</div>
-          `).join('')}
+          `).join('') || '<div class="hint">No event ATC online yet.</div>'}
         </div>
       </div>
 
@@ -199,7 +219,7 @@ async function buildEventOps(){
             <span>${a.callsign}</span>
             <span>${a.rating}</span>
           </div>
-        `).join('')}
+        `).join('') || '<div class="hint">No Thailand ATC online.</div>'}
       </div>
 
     </div>
@@ -231,13 +251,14 @@ async function buildEventOps(){
           <td>${f.aircraft || '-'}</td>
           <td>${renderStatus(f)}</td>
         </tr>
-      `).join('')}
+      `).join('') || '<tr><td colspan="4">No live event traffic yet.</td></tr>'}
       </tbody>
     </table>
   </div>
   `;
 
   statsSection.parentNode.insertBefore(hero, statsSection);
+  return true;
 }
 
 function enhanceSessionModal(){
@@ -376,7 +397,7 @@ function enhanceSessionModal(){
 }
 
 window.addEventListener('DOMContentLoaded', async () => {
-  injectHotNavigation();
-  await buildEventOps();
+  const hasSpecialEvent = await buildEventOps();
+  if(hasSpecialEvent) injectHotNavigation();
   enhanceSessionModal();
 });
