@@ -5,6 +5,7 @@
 
 .coverage-radar{
   isolation:isolate;
+  min-height:460px;
   background:
     radial-gradient(circle at 50% 50%,rgba(25,195,125,.24) 0 4%,transparent 5% 100%),
     radial-gradient(circle at 50% 50%,transparent 0 17%,rgba(47,124,255,.10) 18% 19%,transparent 20% 36%,rgba(47,124,255,.08) 37% 38%,transparent 39% 55%,rgba(47,124,255,.055) 56% 57%,transparent 58% 100%),
@@ -45,7 +46,75 @@
   z-index:2;
 }
 
+.coverage-node{
+  min-width:138px;
+  max-width:170px;
+  padding:12px 14px;
+}
+
+.coverage-node b{
+  font-size:14px;
+}
+
+.coverage-node .pct{
+  font-size:20px;
+}
+
+.node-chiangmai{
+  left:26%;
+  top:12%;
+}
+
+.node-bangkok{
+  left:48%;
+  top:38%;
+  transform:translate(-50%,-50%);
+}
+
+.node-udon{
+  right:9%;
+  top:28%;
+}
+
+.node-south{
+  left:38%;
+  bottom:9%;
+}
+
+.node-offline{
+  right:8%;
+  bottom:20%;
+}
+
 @keyframes radarSweep{
   from{transform:translate(-50%,-50%) rotate(0deg);}
   to{transform:translate(-50%,-50%) rotate(360deg);}
+}
+
+@media(max-width:1200px){
+  .coverage-radar{
+    min-height:520px;
+  }
+
+  .node-chiangmai{left:8%;top:10%;}
+  .node-udon{right:8%;top:18%;}
+  .node-bangkok{left:50%;top:43%;}
+  .node-south{left:12%;bottom:13%;}
+  .node-offline{right:9%;bottom:12%;}
+}
+
+@media(max-width:700px){
+  .coverage-radar{
+    min-height:auto;
+  }
+
+  .coverage-radar > *{
+    position:relative;
+    transform:none!important;
+  }
+
+  .coverage-node{
+    max-width:none;
+    width:100%;
+  }
 }
