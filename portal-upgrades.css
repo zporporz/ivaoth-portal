@@ -1,0 +1,525 @@
+/* ===============================
+   IVAO THAILAND PORTAL UPGRADES
+   Event Mode + ATC Coverage + Session Modal
+=============================== */
+
+.nav a.hot-link{
+position:relative;
+background:linear-gradient(135deg,rgba(193,51,255,.16),rgba(47,124,255,.10));
+border:1px solid rgba(193,51,255,.18);
+}
+
+.nav a.hot-link:after{
+content:"HOT";
+margin-left:8px;
+font-size:9px;
+padding:2px 6px;
+border-radius:999px;
+background:#ff2f8b;
+color:#fff;
+vertical-align:middle;
+}
+
+.ops-panel{
+position:relative;
+overflow:hidden;
+}
+
+.ops-panel:before{
+content:"";
+position:absolute;
+inset:-1px;
+pointer-events:none;
+background:radial-gradient(circle at top right,rgba(193,51,255,.16),transparent 28%),
+           radial-gradient(circle at bottom left,rgba(25,195,125,.12),transparent 34%);
+}
+
+.ops-panel > *{
+position:relative;
+z-index:1;
+}
+
+.event-hero{
+display:grid;
+grid-template-columns:1.4fr .9fr;
+gap:18px;
+margin-top:16px;
+}
+
+.event-main-card{
+min-height:260px;
+border-radius:22px;
+border:1px solid rgba(193,51,255,.28);
+background:linear-gradient(135deg,rgba(10,24,40,.95),rgba(36,14,58,.88)),
+           radial-gradient(circle at right,rgba(193,51,255,.22),transparent 42%);
+padding:24px;
+display:flex;
+flex-direction:column;
+justify-content:space-between;
+box-shadow:0 20px 60px rgba(0,0,0,.22);
+}
+
+.event-kicker{
+font-size:12px;
+font-weight:900;
+letter-spacing:.12em;
+color:#ff5fc3;
+text-transform:uppercase;
+}
+
+.event-title{
+font-size:34px;
+line-height:1.05;
+font-weight:900;
+margin-top:10px;
+}
+
+.event-sub{
+margin-top:10px;
+color:#b9c6e7;
+font-weight:600;
+}
+
+.event-meta-row{
+display:flex;
+gap:10px;
+flex-wrap:wrap;
+margin-top:16px;
+}
+
+.event-pill{
+padding:9px 12px;
+border-radius:999px;
+background:rgba(255,255,255,.06);
+border:1px solid rgba(255,255,255,.08);
+font-size:12px;
+font-weight:800;
+color:#dbe8ff;
+}
+
+.countdown-grid{
+display:grid;
+grid-template-columns:repeat(4,1fr);
+gap:10px;
+margin-top:22px;
+}
+
+.count-box{
+padding:14px 10px;
+border-radius:16px;
+background:rgba(255,255,255,.06);
+border:1px solid rgba(255,255,255,.08);
+text-align:center;
+}
+
+.count-box b{
+display:block;
+font-size:26px;
+}
+
+.count-box small{
+font-size:10px;
+color:#9bb2d3;
+letter-spacing:.08em;
+}
+
+.event-side-grid{
+display:grid;
+grid-template-columns:1fr;
+gap:14px;
+}
+
+.ops-card{
+border-radius:18px;
+background:#0a1828;
+border:1px solid var(--line);
+padding:18px;
+}
+
+.ops-card-head{
+display:flex;
+justify-content:space-between;
+align-items:center;
+gap:12px;
+margin-bottom:12px;
+}
+
+.ops-card-title{
+font-size:12px;
+font-weight:900;
+letter-spacing:.08em;
+text-transform:uppercase;
+color:#8fb6ff;
+}
+
+.ops-big-number{
+font-size:36px;
+font-weight:900;
+line-height:1;
+}
+
+.ops-mini-grid{
+display:grid;
+grid-template-columns:repeat(2,1fr);
+gap:10px;
+margin-top:14px;
+}
+
+.ops-mini{
+padding:12px;
+border-radius:14px;
+background:rgba(255,255,255,.035);
+border:1px solid rgba(255,255,255,.05);
+}
+
+.ops-mini small{
+color:#7e95b8;
+}
+
+.ops-mini b{
+display:block;
+font-size:20px;
+margin-top:4px;
+}
+
+.airport-focus-list,
+.freq-strip,
+.coverage-list,
+.controller-list{
+display:flex;
+gap:10px;
+flex-wrap:wrap;
+}
+
+.airport-focus{
+flex:1 1 120px;
+padding:13px;
+border-radius:16px;
+background:rgba(47,124,255,.08);
+border:1px solid rgba(47,124,255,.18);
+}
+
+.airport-focus b{
+display:block;
+font-size:18px;
+}
+
+.airport-focus small{
+color:#91a7c7;
+}
+
+.freq-chip{
+padding:10px 13px;
+border-radius:999px;
+background:rgba(193,51,255,.12);
+border:1px solid rgba(193,51,255,.28);
+font-size:12px;
+font-weight:900;
+}
+
+.event-arrivals{
+margin-top:16px;
+overflow:auto;
+}
+
+.coverage-wrap{
+display:grid;
+grid-template-columns:1.25fr .75fr;
+gap:18px;
+margin-top:16px;
+}
+
+.coverage-radar{
+min-height:420px;
+border-radius:22px;
+border:1px solid rgba(47,124,255,.18);
+background:
+  radial-gradient(circle at 48% 48%,rgba(25,195,125,.22) 0 5%,transparent 6% 100%),
+  radial-gradient(circle at 50% 50%,transparent 0 18%,rgba(47,124,255,.08) 19% 20%,transparent 21% 38%,rgba(47,124,255,.06) 39% 40%,transparent 41% 100%),
+  linear-gradient(135deg,#07111f,#0b1c32 60%,#091322);
+position:relative;
+overflow:hidden;
+padding:22px;
+}
+
+.coverage-radar:before{
+content:"";
+position:absolute;
+width:160%;
+height:160%;
+left:-30%;
+top:-30%;
+background:conic-gradient(from 0deg,rgba(25,195,125,.18),transparent 24%,transparent 100%);
+animation:radarSweep 7s linear infinite;
+transform-origin:center;
+}
+
+.coverage-radar:after{
+content:"";
+position:absolute;
+inset:20px;
+border-radius:24px;
+border:1px dashed rgba(125,180,255,.14);
+}
+
+@keyframes radarSweep{
+from{transform:rotate(0deg);}
+to{transform:rotate(360deg);}
+}
+
+.coverage-node{
+position:absolute;
+z-index:2;
+min-width:150px;
+padding:14px;
+border-radius:16px;
+background:rgba(10,24,40,.82);
+backdrop-filter:blur(8px);
+border:1px solid rgba(255,255,255,.12);
+box-shadow:0 12px 30px rgba(0,0,0,.28);
+}
+
+.coverage-node.full{border-color:rgba(25,195,125,.55);box-shadow:0 0 28px rgba(25,195,125,.12);}
+.coverage-node.partial{border-color:rgba(255,190,0,.55);box-shadow:0 0 28px rgba(255,190,0,.10);}
+.coverage-node.none{border-color:rgba(255,93,108,.45);opacity:.76;}
+
+.coverage-node b{
+display:block;
+font-size:15px;
+}
+
+.coverage-node small{
+display:block;
+margin-top:4px;
+color:#9bb2d3;
+}
+
+.coverage-node .pct{
+font-size:22px;
+font-weight:900;
+margin-top:8px;
+}
+
+.node-bangkok{left:45%;top:46%;}
+.node-chiangmai{left:28%;top:18%;}
+.node-south{left:45%;bottom:12%;}
+.node-udon{right:14%;top:30%;}
+.node-offline{right:10%;bottom:20%;}
+
+.controller-panel{
+display:flex;
+flex-direction:column;
+gap:14px;
+}
+
+.coverage-summary{
+display:grid;
+grid-template-columns:repeat(3,1fr);
+gap:10px;
+}
+
+.coverage-summary .ops-mini{
+text-align:center;
+}
+
+.controller-row{
+display:flex;
+justify-content:space-between;
+align-items:center;
+gap:12px;
+padding:10px 0;
+border-bottom:1px solid rgba(255,255,255,.06);
+font-size:13px;
+}
+
+.controller-row:last-child{
+border-bottom:none;
+}
+
+.controller-row span:first-child{
+font-weight:800;
+color:#dfe9ff;
+}
+
+.controller-row span:last-child{
+color:#7fff98;
+font-weight:800;
+}
+
+#sessionModal > div{
+max-width:960px!important;
+background:linear-gradient(180deg,#0d1a2d,#081423)!important;
+}
+
+.session-hero{
+display:grid;
+grid-template-columns:1fr .8fr;
+gap:18px;
+margin-bottom:18px;
+}
+
+.session-identity{
+border-radius:20px;
+border:1px solid rgba(47,124,255,.22);
+background:linear-gradient(135deg,rgba(47,124,255,.12),rgba(10,24,40,.92));
+padding:20px;
+}
+
+.session-callsign{
+font-size:34px;
+font-weight:900;
+line-height:1;
+}
+
+.session-route-big{
+display:flex;
+align-items:center;
+gap:14px;
+font-size:28px;
+font-weight:900;
+margin-top:18px;
+}
+
+.session-progress{
+margin-top:18px;
+height:10px;
+border-radius:999px;
+background:#081423;
+overflow:hidden;
+border:1px solid #1b3557;
+}
+
+.session-progress span{
+display:block;
+height:100%;
+border-radius:999px;
+background:linear-gradient(90deg,#2f7cff,#19c37d);
+}
+
+.session-map-card{
+min-height:220px;
+border-radius:20px;
+border:1px solid rgba(25,195,125,.18);
+background:
+  radial-gradient(circle at 70% 30%,rgba(25,195,125,.12),transparent 28%),
+  linear-gradient(135deg,#07111f,#10223b);
+position:relative;
+overflow:hidden;
+padding:18px;
+}
+
+.session-map-card:before{
+content:"";
+position:absolute;
+inset:18px;
+border:1px dashed rgba(125,180,255,.16);
+border-radius:18px;
+}
+
+.map-route-line{
+position:absolute;
+left:18%;
+right:18%;
+top:53%;
+height:2px;
+background:linear-gradient(90deg,#2f7cff,#ff5fc3);
+transform:rotate(-18deg);
+box-shadow:0 0 14px rgba(47,124,255,.35);
+}
+
+.map-plane{
+position:absolute;
+left:56%;
+top:42%;
+font-size:28px;
+filter:drop-shadow(0 0 12px rgba(98,217,255,.8));
+}
+
+.session-data-grid{
+display:grid;
+grid-template-columns:repeat(4,1fr);
+gap:12px;
+margin-bottom:18px;
+}
+
+.session-data-card{
+background:#081423;
+border-radius:16px;
+padding:14px;
+border:1px solid #1b3557;
+}
+
+.session-data-card small{
+color:var(--muted);
+font-size:11px;
+}
+
+.session-data-card b{
+display:block;
+font-size:18px;
+margin-top:6px;
+}
+
+.session-bottom-grid{
+display:grid;
+grid-template-columns:1.2fr .8fr;
+gap:14px;
+}
+
+.session-status-list{
+display:flex;
+flex-direction:column;
+gap:10px;
+}
+
+.session-status-row{
+display:flex;
+justify-content:space-between;
+gap:12px;
+font-size:13px;
+}
+
+.session-status-row span:first-child{
+color:#91a7c7;
+}
+
+.session-status-row span:last-child{
+font-weight:800;
+color:#dfe9ff;
+text-align:right;
+}
+
+@media(max-width:1100px){
+.event-hero,
+.coverage-wrap,
+.session-hero,
+.session-bottom-grid{
+grid-template-columns:1fr;
+}
+.session-data-grid{
+grid-template-columns:repeat(2,1fr);
+}
+}
+
+@media(max-width:700px){
+.countdown-grid,
+.ops-mini-grid,
+.coverage-summary{
+grid-template-columns:repeat(2,1fr);
+}
+.session-route-big,
+.event-title{
+font-size:24px;
+}
+.coverage-radar{
+min-height:520px;
+}
+.coverage-node{
+position:relative;
+left:auto!important;
+right:auto!important;
+top:auto!important;
+bottom:auto!important;
+margin-bottom:10px;
+}
+}
