@@ -1,0 +1,202 @@
+/* ===============================
+   ATC SESSION MODAL FIX
+   ATC rows must not use Pilot Session Card.
+=============================== */
+
+function formatAtcOnlineTime(value){
+  if(!value) return '-';
+
+  const start = new Date(value);
+  if(Number.isNaN(start.getTime())) return '-';
+
+  const diff = Math.max(0, Date.now() - start.getTime());
+  const totalMin = Math.floor(diff / 60000);
+  const h = Math.floor(totalMin / 60);
+  const m = totalMin % 60;
+
+  if(h <= 0) return `${m} min`;
+  return `${h}h ${m}m`;
+}
+
+function getFacilityName(station){
+  const s = (station || '').toUpperCase();
+  const map = {
+    DEL: 'Delivery',
+    GND: 'Ground',
+    TWR: 'Tower',
+    APP: 'Approach',
+    DEP: 'Departure',
+    CTR: 'Control',
+    FSS: 'Flight Service'
+  };
+
+  return map[s] || s || '-';
+}
+
+function openAtcSession(atc){
+  const modal = document.getElementById('sessionModal');
+  const body = document.getElementById('sessionBody');
+  const title = document.getElementById('sessionTitle');
+
+  if(!modal || !body || !title) return;
+
+  title.innerText = atc.callsign || 'ATC Session';
+  modal.style.display = 'flex';
+
+  const station = (atc.station || '').toUpperCase();
+  const airport = atc.airport || (atc.callsign || '').split('_')[0] || '-';
+  const facility = getFacilityName(station);
+  const connectedAt = atc.connected_at
+    ? new Date(atc.connected_at).toISOString().replace('T',' ').slice(0,16) + ' UTC'
+    : '-';
+
+  body.innerHTML = `
+    <div class="session-hero">
+      <div class="session-identity" style="grid-column:1/-1;">
+        <div class="event-kicker">ATC Session Card</div>
+        <div class="session-callsign">${atc.callsign || '-'}</div>
+
+        <div class="subline" style="margin-top:10px;">
+          <span class="aircraft-chip">${facility}</span>
+          <span class="vid-chip">VID ${atc.user_id || '-'}</span>
+          <span class="time-chip">ONLINE</span>
+        </div>
+
+        <div class="session-route-big">
+          <span>${airport}</span>
+          <span class="arrow">·</span>
+          <span>${station || 'ATC'}</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="session-data-grid">
+      <div class="session-data-card">
+        <small>Facility</small>
+        <b>${facility}</b>
+      </div>
+
+      <div class="session-data-card">
+        <small>Airport / Area</small>
+        <b>${airport}</b>
+      </div>
+
+      <div class="session-data-card">
+        <small>ATC Rating</small>
+        <b>${atc.rating || '-'}</b>
+      </div>
+
+      <div class="session-data-card">
+        <small>Online Time</small>
+        <b>${formatAtcOnlineTime(atc.connected_at)}</b>
+      </div>
+    </div>
+
+    <div class="session-bottom-grid">
+      <div class="session-route">
+        <small>Controller Information</small>
+
+        <div class="session-status-list">
+          <div class="session-status-row">
+            <span>Callsign</span>
+            <span>${atc.callsign || '-'}</span>
+          </div>
+
+          <div class="session-status-row">
+            <span>Station</span>
+            <span>${station || '-'}</span>
+          </div>
+
+          <div class="session-status-row">
+            <span>Airport</span>
+            <span>${airport}</span>
+          </div>
+
+          <div class="session-status-row">
+            <span>Connected</span>
+            <span>${connectedAt}</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="session-route">
+        <small>Session</small>
+
+        <div class="session-status-list">
+          <div class="session-status-row">
+            <span>VID</span>
+            <span>${atc.user_id || '-'}</span>
+          </div>
+
+          <div class="session-status-row">
+            <span>Rating</span>
+            <span>${atc.rating || '-'}</span>
+          </div>
+
+          <div class="session-status-row">
+            <span>Type</span>
+            <span>ATC</span>
+          </div>
+
+          <div class="session-status-row">
+            <span>Tracker</span>
+            <span><a href="https://tracker.ivao.aero/sessions/${atc.session_id}" target="_blank" style="color:#7db4ff;text-decoration:none;">Open →</a></span>
+          </div>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+async function loadLiveAtcFixed(){
+  const wrap = document.getElementById('liveAtcTable');
+  if(!wrap) return;
+
+  try{
+    const res = await fetch('/api/live-atc');
+    const data = await res.json();
+
+    const count = document.getElementById('atcCount');
+    if(count) count.innerText = Array.isArray(data) ? data.length : '-';
+
+    if(!Array.isArray(data) || !data.length){
+      wrap.innerHTML = '<div class="msg">No Thailand ATC online.</div>';
+      return;
+    }
+
+    window.__liveAtcData = data;
+
+    wrap.innerHTML = `
+      <table class="pro-table">
+        <thead>
+          <tr>
+            <th>Callsign</th>
+            <th>Airport</th>
+            <th>Station</th>
+            <th>Rating</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${data.map((r, index) => `
+            <tr>
+              <td><a href="javascript:void(0)" onclick="openAtcSession(window.__liveAtcData[${index}])" class="trk-link">${r.callsign}</a></td>
+              <td><span class="aircraft-chip">${r.airport}</span></td>
+              <td><span class="badge cyan">${r.station}</span></td>
+              <td><span class="badge blue">${r.rating}</span></td>
+            </tr>
+          `).join('')}
+        </tbody>
+      </table>`;
+  }catch(err){
+    console.log('Live ATC Fixed Error:', err);
+    wrap.innerHTML = '<div class="msg">Failed to load live ATC.</div>';
+  }
+}
+
+window.openAtcSession = openAtcSession;
+window.loadLiveAtcFixed = loadLiveAtcFixed;
+
+window.addEventListener('DOMContentLoaded', () => {
+  loadLiveAtcFixed();
+  setInterval(loadLiveAtcFixed, 300000);
+});
