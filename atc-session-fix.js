@@ -33,6 +33,41 @@ function getFacilityName(station){
   return map[s] || s || '-';
 }
 
+function isAtcCallsign(callsign){
+  return /^[A-Z0-9]{4}_(DEL|GND|TWR|APP|DEP|CTR|FSS|ATIS)$/i.test(callsign || '');
+}
+
+async function findAtcBySession(sessionId, callsign){
+  let data = window.__liveAtcData;
+
+  if(!Array.isArray(data) || !data.length){
+    try{
+      const res = await fetch('/api/live-atc');
+      data = await res.json();
+      window.__liveAtcData = Array.isArray(data) ? data : [];
+    }catch{
+      data = [];
+    }
+  }
+
+  const bySession = data.find(a => String(a.session_id) === String(sessionId));
+  if(bySession) return bySession;
+
+  const byCallsign = data.find(a => (a.callsign || '').toUpperCase() === (callsign || '').toUpperCase());
+  if(byCallsign) return byCallsign;
+
+  const parts = (callsign || '').split('_');
+  return {
+    session_id: sessionId,
+    callsign,
+    user_id: '-',
+    airport: parts[0] || '-',
+    station: parts[1] || 'ATC',
+    rating: '-',
+    connected_at: null
+  };
+}
+
 function openAtcSession(atc){
   const modal = document.getElementById('sessionModal');
   const body = document.getElementById('sessionBody');
@@ -148,6 +183,25 @@ function openAtcSession(atc){
   `;
 }
 
+function installAtcOpenSessionGuard(){
+  const previousOpenSession = window.openSession;
+
+  if(window.__atcOpenSessionGuardInstalled) return;
+  window.__atcOpenSessionGuardInstalled = true;
+
+  window.openSession = async function(sessionId, callsign){
+    if(isAtcCallsign(callsign)){
+      const atc = await findAtcBySession(sessionId, callsign);
+      openAtcSession(atc);
+      return;
+    }
+
+    if(typeof previousOpenSession === 'function'){
+      return previousOpenSession(sessionId, callsign);
+    }
+  };
+}
+
 async function loadLiveAtcFixed(){
   const wrap = document.getElementById('liveAtcTable');
   if(!wrap) return;
@@ -197,6 +251,13 @@ window.openAtcSession = openAtcSession;
 window.loadLiveAtcFixed = loadLiveAtcFixed;
 
 window.addEventListener('DOMContentLoaded', () => {
-  loadLiveAtcFixed();
-  setInterval(loadLiveAtcFixed, 300000);
+  setTimeout(() => {
+    installAtcOpenSessionGuard();
+    loadLiveAtcFixed();
+  }, 250);
+
+  setInterval(() => {
+    installAtcOpenSessionGuard();
+    loadLiveAtcFixed();
+  }, 300000);
 });
