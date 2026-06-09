@@ -4,24 +4,14 @@
 =============================== */
 
 function isSearchFlightMissing(f){
-  const state = (f.last_state || '').trim().toLowerCase();
-  const nearArrival = f.arrival_distance !== null && f.arrival_distance < 3;
-
-  if(f.status === 'online') return false;
-  if(state === 'on blocks' || state === 'landed') return false;
-  if(nearArrival) return false;
-
-  return Boolean(state || f.status === 'offline');
+  return f.status === 'disconnected';
 }
 
 window.renderSearchStatus = function(f){
   const state = (f.last_state || '').trim().toLowerCase();
 
-  if(state === 'on blocks') return '<span class="badge green">ON BLOCKS</span>';
-  if(state === 'landed') return '<span class="badge green">LANDED</span>';
-
-  if(f.arrival_distance !== null && f.arrival_distance < 3){
-    return '<span class="badge green">ON BLOCKS</span>';
+  if(f.status === 'landed' || state === 'on blocks' || state === 'landed'){
+    return `<span class="badge green">${state === 'on blocks' ? 'ON BLOCKS' : 'LANDED'}</span>`;
   }
 
   if(f.status === 'online'){
@@ -34,7 +24,9 @@ window.renderSearchStatus = function(f){
     return '<span class="badge cyan">ONLINE</span>';
   }
 
-  if(isSearchFlightMissing(f)) return '<span class="badge red">MISSING</span>';
+  if(f.status === 'no_departure') return '<span class="badge orange">NO DEPARTURE</span>';
+  if(isSearchFlightMissing(f)) return '<span class="badge red">DISCONNECTED</span>';
+  if(f.status === 'unknown') return '<span class="badge orange">UNKNOWN</span>';
   return '<span class="badge red">OFFLINE</span>';
 };
 
@@ -49,9 +41,11 @@ window.applyFilter = function(){
 window.getDisplayState = function(f){
   const state = (f.last_state || '').trim();
 
-  if(f.landed_at) return 'LANDED';
+  if(f.status === 'landed' || f.landed_at) return 'LANDED';
   if(f.status === 'online') return state ? state.toUpperCase() : 'ONLINE';
-  if(isSearchFlightMissing(f)) return 'MISSING';
+  if(f.status === 'no_departure') return 'NO DEPARTURE';
+  if(isSearchFlightMissing(f)) return 'DISCONNECTED';
+  if(f.status === 'unknown') return 'UNKNOWN';
   if(f.status === 'offline') return 'OFFLINE';
   return state ? state.toUpperCase() : 'ONLINE';
 };
