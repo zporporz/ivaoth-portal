@@ -1,25 +1,55 @@
+const ICAO_PATTERN = /^[A-Z0-9]{4}$/
+const TERMINAL_STATES = new Set(['on blocks', 'landed'])
+
+export function isFlightOnline(flight, from, to, now = new Date()) {
+  const fromDate = new Date(from)
+  const toDate = new Date(to)
+  const state = (flight.lastTrack?.state || '').trim().toLowerCase()
+  const completedAt = flight.completedAt ? new Date(flight.completedAt) : null
+
+  if (Number.isNaN(fromDate.getTime()) || Number.isNaN(toDate.getTime())) return false
+  if (now < fromDate || now > toDate) return false
+  if (completedAt && !Number.isNaN(completedAt.getTime()) && completedAt <= now) return false
+  return !TERMINAL_STATES.has(state)
+}
+
+function parseIcaos(value) {
+  return [...new Set(
+    String(value || '')
+      .split(',')
+      .map(x => x.trim().toUpperCase())
+      .filter(Boolean)
+  )]
+}
+
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*')
-  const { from, to, dep, arr, airports } = req.query
+  const { from, to, dep, arr, airports, bidirectional = 'true' } = req.query
 
   if (!from || !to) {
     return res.status(400).json({ error: 'from and to required' })
   }
 
   try {
+    const fromDate = new Date(from)
+    const toDate = new Date(to)
+    if (Number.isNaN(fromDate.getTime()) || Number.isNaN(toDate.getTime()) || fromDate > toDate) {
+      return res.status(400).json({ error: 'Invalid date range' })
+    }
+
     let icaoList = []
 
     if (airports) {
-      icaoList = airports.split(',').map(x => x.trim().toUpperCase()).filter(Boolean)
+      icaoList = parseIcaos(airports)
     } else {
-      const set = new Set()
-      if (dep) set.add(dep.trim().toUpperCase())
-      if (arr) set.add(arr.trim().toUpperCase())
-      icaoList = [...set]
+      icaoList = parseIcaos([dep, arr].filter(Boolean).join(','))
     }
 
     if (icaoList.length === 0) {
       return res.status(400).json({ error: 'No airports specified' })
+    }
+    if (icaoList.length > 20 || icaoList.some(icao => !ICAO_PATTERN.test(icao))) {
+      return res.status(400).json({ error: 'Invalid airport ICAO list' })
     }
 
     const results = await Promise.all(
@@ -53,12 +83,12 @@ export default async function handler(req, res) {
         if (!airports) {
           const flightDep = (flight.flightPlan?.departureId || '').toUpperCase()
           const flightArr = (flight.flightPlan?.arrivalId || '').toUpperCase()
-          const d = (dep || '').toUpperCase()
-          const a = (arr || '').toUpperCase()
+          const d = (dep || '').trim().toUpperCase()
+          const a = (arr || '').trim().toUpperCase()
 
           if (d && a) {
             const forward  = flightDep === d && flightArr === a
-            const backward = flightDep === a && flightArr === d
+            const backward = bidirectional !== 'false' && flightDep === a && flightArr === d
             if (!forward && !backward) continue
           } else if (d && flightDep !== d) continue
           else if (a && flightArr !== a) continue
@@ -70,16 +100,10 @@ export default async function handler(req, res) {
 
         const fp = flight.flightPlan || {}
         const state = (flight.lastTrack?.state || '').trim()
-        const onlineNow = new Date(from) <= new Date() && new Date(to) >= new Date()
-
-        // Determine status
-        let status = 'offline'
-        if (onlineNow && state && !['On Blocks', 'Landed'].includes(state)) {
-          status = 'online'
-        }
+        const status = isFlightOnline(flight, from, to) ? 'online' : 'offline'
 
         // Duration from `time` field (seconds)
-        const durationSec = flight.time || null
+        const durationSec = flight.time ?? null
 
         rows.push({
           session_id: flight.id,
@@ -89,8 +113,9 @@ export default async function handler(req, res) {
           departure: fp.departureId || null,
           arrival: fp.arrivalId || null,
           connected_at: flight.createdAt,
+          completed_at: flight.completedAt || null,
           departed_at: null,
-          landed_at: state === 'On Blocks' || state === 'Landed' ? true : null,
+          landed_at: TERMINAL_STATES.has(state.toLowerCase()) ? true : null,
           status,
           last_state: state,
           duration_sec: durationSec,

@@ -5,6 +5,39 @@
 const API = "";
 
 let latestData = [];
+let searchController = null;
+let sessionController = null;
+
+function cancelSessionRequests() {
+  sessionController?.abort();
+  window.__sessionRequestController?.abort();
+}
+
+function escapeHtml(value) {
+  return String(value ?? "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+}
+
+function safeExternalUrl(value) {
+  try {
+    const url = new URL(value);
+    return url.protocol === "https:" ? url.href : "";
+  } catch {
+    return "";
+  }
+}
+
+function sessionLink(sessionId, callsign) {
+  return `<a href="#" class="trk-link js-session-link" data-session-id="${escapeHtml(sessionId)}" data-callsign="${escapeHtml(callsign)}">${escapeHtml(callsign)}</a>`;
+}
+
+window.escapeHtml = escapeHtml;
+window.safeExternalUrl = safeExternalUrl;
+window.cancelSessionRequests = cancelSessionRequests;
 
 /* ===============================
    UI MODE
@@ -42,6 +75,7 @@ function resetForm() {
    SEARCH FLIGHTS
 ================================= */
 async function searchFlights() {
+  searchController?.abort();
   const results = document.getElementById("results");
   results.innerHTML = '<div class="msg">Searching...</div>';
   document.getElementById("resultSection").style.display = "block";
@@ -76,10 +110,14 @@ async function searchFlights() {
       const arr = document.getElementById("arr").value.trim().toUpperCase();
       if (dep) url += `&dep=${dep}`;
       if (arr) url += `&arr=${arr}`;
+      url += `&bidirectional=${document.getElementById("bidirectional").checked}`;
     }
 
-    const res = await fetch(url);
+    searchController = new AbortController();
+    const res = await fetch(url, { signal: searchController.signal });
+    if (!res.ok) throw new Error(`Search ${res.status}`);
     const data = await res.json();
+    if (!Array.isArray(data)) throw new Error("Invalid search response");
 
     latestData = (data || []).map(r => ({ ...r, search_to: to }));
     const depVal = document.getElementById("modeSwitch").checked ? null : document.getElementById("dep").value.trim().toUpperCase();
@@ -88,6 +126,7 @@ async function searchFlights() {
     renderSearch(latestData);
 
   } catch (err) {
+    if (err.name === "AbortError") return;
     console.log(err);
     results.innerHTML = '<div class="msg">Query failed.</div>';
   }
@@ -174,18 +213,18 @@ ${rows.map(r => {
 <tr>
 <td>
 <div class="flight-box">
-<a href="javascript:void(0)" onclick="openSession(${r.session_id},'${r.callsign}')" class="trk-link">${r.callsign}</a>
+${sessionLink(r.session_id, r.callsign)}
 <div class="subline">
-<span class="aircraft-chip">${r.aircraft_id || "-"}</span>
-<span class="vid-chip">VID ${r.user_id}</span>
+<span class="aircraft-chip">${escapeHtml(r.aircraft_id || "-")}</span>
+<span class="vid-chip">VID ${escapeHtml(r.user_id)}</span>
 </div>
 </div>
 </td>
 <td>
 <div class="route-box">
-<span>${r.departure || "---"}</span>
+<span>${escapeHtml(r.departure || "---")}</span>
 <span class="arrow">→</span>
-<span>${r.arrival || "---"}</span>
+<span>${escapeHtml(r.arrival || "---")}</span>
 </div>
 </td>
 <td>${connected}</td>
@@ -237,7 +276,10 @@ let liveData = [];
 async function loadLiveBoard() {
   try {
     const res = await fetch(`${API}/api/live`);
-    liveData = await res.json();
+    if (!res.ok) throw new Error(`Live Board ${res.status}`);
+    const data = await res.json();
+    if (!Array.isArray(data)) throw new Error("Invalid live board response");
+    liveData = data;
     livePage = 1;
     renderLiveBoard();
 
@@ -253,6 +295,7 @@ async function loadLiveBoard() {
 function renderLiveBoard() {
   const wrap = document.getElementById("liveBoardTable");
   if (!liveData.length) {
+    document.getElementById("pilotCount").innerText = "0";
     wrap.innerHTML = '<div class="msg">No Thailand flights online.</div>';
     return;
   }
@@ -279,23 +322,23 @@ ${pageData.map(r => `
 <td>
 <div class="flight-box">
   <div style="display:flex;align-items:center;gap:10px;">
-    ${r.logo ? `<img src="${r.logo}" style="width:28px;height:28px;object-fit:contain;border-radius:6px;">` : ''}
-    <a href="javascript:void(0)" onclick="openSession(${r.session_id},'${r.callsign}')" class="trk-link">${r.callsign}</a>
+    ${r.logo ? `<img src="${escapeHtml(r.logo)}" style="width:28px;height:28px;object-fit:contain;border-radius:6px;" alt="">` : ''}
+    ${sessionLink(r.session_id, r.callsign)}
   </div>
   <div class="subline">
-    <span class="vid-chip">VID ${r.user_id}</span>
-    ${r.rating ? `<span class="aircraft-chip">${r.rating}</span>` : ''}
+    <span class="vid-chip">VID ${escapeHtml(r.user_id)}</span>
+    ${r.rating ? `<span class="aircraft-chip">${escapeHtml(r.rating)}</span>` : ''}
   </div>
 </div>
 </td>
 <td>
 <div class="route-box">
-  <span>${r.departure || '---'}</span>
+  <span>${escapeHtml(r.departure || '---')}</span>
   <span class="arrow">→</span>
-  <span>${r.arrival || '---'}</span>
+  <span>${escapeHtml(r.arrival || '---')}</span>
 </div>
 </td>
-<td><span class="aircraft-chip">${r.aircraft || '-'}</span></td>
+<td><span class="aircraft-chip">${escapeHtml(r.aircraft || '-')}</span></td>
 <td>${renderStatus(r)}</td>
 </tr>
 `).join("")}
@@ -327,6 +370,7 @@ async function loadLiveAtc() {
   try {
     const res  = await fetch(`${API}/api/live-atc`);
     const data = await res.json();
+    if (!res.ok || !Array.isArray(data)) throw new Error(`Live ATC ${res.status}`);
 
     document.getElementById("atcCount").innerText = data.length;
 
@@ -348,10 +392,10 @@ async function loadLiveAtc() {
 <tbody>
 ${data.map(r => `
 <tr>
-<td><a href="javascript:void(0)" onclick="openSession(${r.session_id},'${r.callsign}')" class="trk-link">${r.callsign}</a></td>
-<td><span class="aircraft-chip">${r.airport}</span></td>
-<td><span class="badge cyan">${r.station}</span></td>
-<td><span class="badge blue">${r.rating}</span></td>
+<td>${sessionLink(r.session_id, r.callsign)}</td>
+<td><span class="aircraft-chip">${escapeHtml(r.airport)}</span></td>
+<td><span class="badge cyan">${escapeHtml(r.station)}</span></td>
+<td><span class="badge blue">${escapeHtml(r.rating)}</span></td>
 </tr>
 `).join("")}
 </tbody>
@@ -368,6 +412,7 @@ ${data.map(r => `
 async function loadDashboard() {
   try {
     const res  = await fetch(`${API}/api/stats`);
+    if (!res.ok) throw new Error(`Dashboard ${res.status}`);
     const data = await res.json();
 
     document.getElementById("dPilots").innerText  = data.pilots ?? "-";
@@ -395,7 +440,9 @@ async function loadEventPanel() {
 
   try {
     const res  = await fetch(`${API}/api/events`);
+    if (!res.ok) throw new Error(`Events ${res.status}`);
     const data = await res.json();
+    if (!Array.isArray(data)) throw new Error("Invalid events response");
 
     const onlineDay = `
     <div class="event-panel-card">
@@ -414,18 +461,20 @@ async function loadEventPanel() {
       const start   = new Date(e.startDate);
       const dateStr = start.toUTCString().slice(0,16);
       const timeStr = start.toUTCString().split(' ')[4].slice(0,5) + ' UTC';
+      const imageUrl = safeExternalUrl(e.imageUrl);
+      const infoUrl = safeExternalUrl(e.infoUrl);
       return `
       <div class="event-panel-card">
-        ${e.imageUrl
-          ? `<img class="event-panel-banner" src="${e.imageUrl}" onerror="this.style.display='none'" alt="">`
+        ${imageUrl
+          ? `<img class="event-panel-banner" src="${escapeHtml(imageUrl)}" onerror="this.style.display='none'" alt="">`
           : `<img class="event-panel-banner" src="https://storage.th.ivao.aero/EVENTS/utilities/Division%20Online%20Day.png" alt="">`}
         <div class="event-panel-body">
-          <div class="event-panel-title">${e.title}</div>
+          <div class="event-panel-title">${escapeHtml(e.title)}</div>
           <div class="event-panel-meta">${dateStr} • ${timeStr}</div>
           <div class="event-panel-airports">
-            ${(e.airports || []).slice(0,3).map(a => `<span>${a}</span>`).join('')}
+            ${(e.airports || []).slice(0,3).map(a => `<span>${escapeHtml(a)}</span>`).join('')}
           </div>
-          ${e.infoUrl ? `<a href="${e.infoUrl}" target="_blank" class="event-panel-link">Forum →</a>` : ''}
+          ${infoUrl ? `<a href="${escapeHtml(infoUrl)}" target="_blank" rel="noopener noreferrer" class="event-panel-link">Forum →</a>` : ''}
         </div>
       </div>`;
     }).join('');
@@ -511,7 +560,12 @@ async function openSession(sessionId, callsign) {
   modal.style.display = "flex";
 
   try {
-    const res  = await fetch(`${API}/api/session?id=${sessionId}`);
+    cancelSessionRequests();
+    sessionController = new AbortController();
+    const res  = await fetch(`${API}/api/session?id=${encodeURIComponent(sessionId)}`, {
+      signal: sessionController.signal
+    });
+    if (!res.ok) throw new Error(`Session ${res.status}`);
     const d    = await res.json();
 
     const formatAlt = a => a ? `${a.toLocaleString()} ft` : "-";
@@ -521,28 +575,28 @@ async function openSession(sessionId, callsign) {
 <div class="session-grid">
   <div class="session-block">
     <small>Pilot</small>
-    <div class="session-val">${d.name || 'VID ' + d.user_id}</div>
+    <div class="session-val">${escapeHtml(d.name || 'VID ' + d.user_id)}</div>
     <div class="subline" style="margin-top:4px">
-      <span class="aircraft-chip">${d.pilot_rating || '-'}</span>
-      <span class="vid-chip">${d.division || ''}</span>
-      <span class="vid-chip">VID ${d.user_id}</span>
+      <span class="aircraft-chip">${escapeHtml(d.pilot_rating || '-')}</span>
+      <span class="vid-chip">${escapeHtml(d.division || '')}</span>
+      <span class="vid-chip">VID ${escapeHtml(d.user_id)}</span>
     </div>
   </div>
   <div class="session-block">
     <small>Simulator</small>
-    <div class="session-val">${d.simulator || '-'}</div>
+    <div class="session-val">${escapeHtml(d.simulator || '-')}</div>
   </div>
   <div class="session-block">
     <small>Route</small>
     <div class="route-box" style="font-size:20px;font-weight:800;">
-      <span>${d.departure || '---'}</span>
+      <span>${escapeHtml(d.departure || '---')}</span>
       <span class="arrow">→</span>
-      <span>${d.arrival || '---'}</span>
+      <span>${escapeHtml(d.arrival || '---')}</span>
     </div>
   </div>
   <div class="session-block">
     <small>Aircraft</small>
-    <div class="session-val">${d.aircraft || '-'}</div>
+    <div class="session-val">${escapeHtml(d.aircraft || '-')}</div>
   </div>
   <div class="session-block">
     <small>Altitude</small>
@@ -558,32 +612,34 @@ async function openSession(sessionId, callsign) {
   </div>
   <div class="session-block">
     <small>State</small>
-    <div>${d.state ? `<span class="badge cyan">${d.state}</span>` : '-'}</div>
+    <div>${d.state ? `<span class="badge cyan">${escapeHtml(d.state)}</span>` : '-'}</div>
   </div>
-  ${d.cruise_altitude ? `<div class="session-block"><small>Planned Altitude</small><div class="session-val">${d.cruise_altitude}</div></div>` : ''}
-  ${d.cruise_speed    ? `<div class="session-block"><small>Planned Speed</small><div class="session-val">${d.cruise_speed}</div></div>` : ''}
+  ${d.cruise_altitude ? `<div class="session-block"><small>Planned Altitude</small><div class="session-val">${escapeHtml(d.cruise_altitude)}</div></div>` : ''}
+  ${d.cruise_speed    ? `<div class="session-block"><small>Planned Speed</small><div class="session-val">${escapeHtml(d.cruise_speed)}</div></div>` : ''}
 </div>
 ${d.route ? `
 <div class="session-route">
   <small>Route</small>
-  <div class="route-text">${d.route}</div>
+  <div class="route-text">${escapeHtml(d.route)}</div>
 </div>` : ''}
 ${d.remarks ? `
 <div class="session-route">
   <small>Remarks</small>
-  <div class="route-text" style="font-size:11px;opacity:.7">${d.remarks}</div>
+  <div class="route-text" style="font-size:11px;opacity:.7">${escapeHtml(d.remarks)}</div>
 </div>` : ''}
 <div style="margin-top:18px;text-align:right">
-  <a href="https://tracker.ivao.aero/sessions/${d.session_id}" target="_blank" class="btn-main" style="text-decoration:none;padding:10px 18px;border-radius:12px;font-size:13px;">
+  <a href="https://tracker.ivao.aero/sessions/${encodeURIComponent(d.session_id)}" target="_blank" rel="noopener noreferrer" class="btn-main" style="text-decoration:none;padding:10px 18px;border-radius:12px;font-size:13px;">
     Open in IVAO Tracker →
   </a>
 </div>`;
   } catch (err) {
+    if (err.name === "AbortError") return;
     body.innerHTML = '<div class="msg">Failed to load session.</div>';
   }
 }
 
 function closeSession() {
+  cancelSessionRequests();
   document.getElementById("sessionModal").style.display = "none";
 }
 
@@ -595,12 +651,10 @@ window.closeSession = closeSession;
 ================================= */
 loadDashboard();
 loadLiveBoard();
-loadLiveAtc();
 loadEventPanel();
 
 window.closeEventPanel = closeEventPanel;
 
-setInterval(loadLiveAtc, 300000);
 window.loadLiveAtc = loadLiveAtc;
 
 setInterval(loadLiveBoard, 300000);
@@ -612,3 +666,10 @@ window.resetForm     = resetForm;
 window.toggleMode    = toggleMode;
 window.goToSection   = goToSection;
 window.scrollToTop   = scrollToTop;
+
+document.addEventListener("click", event => {
+  const link = event.target.closest(".js-session-link");
+  if (!link) return;
+  event.preventDefault();
+  openSession(link.dataset.sessionId, link.dataset.callsign);
+});

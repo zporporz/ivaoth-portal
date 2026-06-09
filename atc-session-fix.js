@@ -43,6 +43,7 @@ async function findAtcBySession(sessionId, callsign){
   if(!Array.isArray(data) || !data.length){
     try{
       const res = await fetch('/api/live-atc');
+      if(!res.ok) throw new Error(`Live ATC ${res.status}`);
       data = await res.json();
       window.__liveAtcData = Array.isArray(data) ? data : [];
     }catch{
@@ -69,6 +70,7 @@ async function findAtcBySession(sessionId, callsign){
 }
 
 function openAtcSession(atc){
+  window.cancelSessionRequests();
   const modal = document.getElementById('sessionModal');
   const body = document.getElementById('sessionBody');
   const title = document.getElementById('sessionTitle');
@@ -81,6 +83,7 @@ function openAtcSession(atc){
   const station = (atc.station || '').toUpperCase();
   const airport = atc.airport || (atc.callsign || '').split('_')[0] || '-';
   const facility = getFacilityName(station);
+  const esc = window.escapeHtml;
   const connectedAt = atc.connected_at
     ? new Date(atc.connected_at).toISOString().replace('T',' ').slice(0,16) + ' UTC'
     : '-';
@@ -89,18 +92,18 @@ function openAtcSession(atc){
     <div class="session-hero">
       <div class="session-identity" style="grid-column:1/-1;">
         <div class="event-kicker">ATC Session Card</div>
-        <div class="session-callsign">${atc.callsign || '-'}</div>
+        <div class="session-callsign">${esc(atc.callsign || '-')}</div>
 
         <div class="subline" style="margin-top:10px;">
-          <span class="aircraft-chip">${facility}</span>
-          <span class="vid-chip">VID ${atc.user_id || '-'}</span>
+          <span class="aircraft-chip">${esc(facility)}</span>
+          <span class="vid-chip">VID ${esc(atc.user_id || '-')}</span>
           <span class="time-chip">ONLINE</span>
         </div>
 
         <div class="session-route-big">
-          <span>${airport}</span>
+          <span>${esc(airport)}</span>
           <span class="arrow">·</span>
-          <span>${station || 'ATC'}</span>
+          <span>${esc(station || 'ATC')}</span>
         </div>
       </div>
     </div>
@@ -108,17 +111,17 @@ function openAtcSession(atc){
     <div class="session-data-grid">
       <div class="session-data-card">
         <small>Facility</small>
-        <b>${facility}</b>
+        <b>${esc(facility)}</b>
       </div>
 
       <div class="session-data-card">
         <small>Airport / Area</small>
-        <b>${airport}</b>
+        <b>${esc(airport)}</b>
       </div>
 
       <div class="session-data-card">
         <small>ATC Rating</small>
-        <b>${atc.rating || '-'}</b>
+        <b>${esc(atc.rating || '-')}</b>
       </div>
 
       <div class="session-data-card">
@@ -134,17 +137,17 @@ function openAtcSession(atc){
         <div class="session-status-list">
           <div class="session-status-row">
             <span>Callsign</span>
-            <span>${atc.callsign || '-'}</span>
+            <span>${esc(atc.callsign || '-')}</span>
           </div>
 
           <div class="session-status-row">
             <span>Station</span>
-            <span>${station || '-'}</span>
+            <span>${esc(station || '-')}</span>
           </div>
 
           <div class="session-status-row">
             <span>Airport</span>
-            <span>${airport}</span>
+            <span>${esc(airport)}</span>
           </div>
 
           <div class="session-status-row">
@@ -160,12 +163,12 @@ function openAtcSession(atc){
         <div class="session-status-list">
           <div class="session-status-row">
             <span>VID</span>
-            <span>${atc.user_id || '-'}</span>
+            <span>${esc(atc.user_id || '-')}</span>
           </div>
 
           <div class="session-status-row">
             <span>Rating</span>
-            <span>${atc.rating || '-'}</span>
+            <span>${esc(atc.rating || '-')}</span>
           </div>
 
           <div class="session-status-row">
@@ -175,7 +178,7 @@ function openAtcSession(atc){
 
           <div class="session-status-row">
             <span>Tracker</span>
-            <span><a href="https://tracker.ivao.aero/sessions/${atc.session_id}" target="_blank" style="color:#7db4ff;text-decoration:none;">Open →</a></span>
+            <span><a href="https://tracker.ivao.aero/sessions/${encodeURIComponent(atc.session_id)}" target="_blank" rel="noopener noreferrer" style="color:#7db4ff;text-decoration:none;">Open →</a></span>
           </div>
         </div>
       </div>
@@ -208,7 +211,9 @@ async function loadLiveAtcFixed(){
 
   try{
     const res = await fetch('/api/live-atc');
+    if(!res.ok) throw new Error(`Live ATC ${res.status}`);
     const data = await res.json();
+    window.__liveAtcData = Array.isArray(data) ? data : [];
 
     const count = document.getElementById('atcCount');
     if(count) count.innerText = Array.isArray(data) ? data.length : '-';
@@ -217,8 +222,6 @@ async function loadLiveAtcFixed(){
       wrap.innerHTML = '<div class="msg">No Thailand ATC online.</div>';
       return;
     }
-
-    window.__liveAtcData = data;
 
     wrap.innerHTML = `
       <table class="pro-table">
@@ -233,10 +236,10 @@ async function loadLiveAtcFixed(){
         <tbody>
           ${data.map((r, index) => `
             <tr>
-              <td><a href="javascript:void(0)" onclick="openAtcSession(window.__liveAtcData[${index}])" class="trk-link">${r.callsign}</a></td>
-              <td><span class="aircraft-chip">${r.airport}</span></td>
-              <td><span class="badge cyan">${r.station}</span></td>
-              <td><span class="badge blue">${r.rating}</span></td>
+              <td><a href="#" onclick="event.preventDefault();openAtcSession(window.__liveAtcData[${index}])" class="trk-link">${window.escapeHtml(r.callsign)}</a></td>
+              <td><span class="aircraft-chip">${window.escapeHtml(r.airport)}</span></td>
+              <td><span class="badge cyan">${window.escapeHtml(r.station)}</span></td>
+              <td><span class="badge blue">${window.escapeHtml(r.rating)}</span></td>
             </tr>
           `).join('')}
         </tbody>

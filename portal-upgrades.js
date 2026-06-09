@@ -32,8 +32,14 @@ function enhanceSessionModal(){
     modal.style.display = 'flex';
 
     try{
-      const res = await fetch(`/api/session?id=${sessionId}`);
+      window.cancelSessionRequests();
+      window.__sessionRequestController = new AbortController();
+      const res = await fetch(`/api/session?id=${encodeURIComponent(sessionId)}`, {
+        signal: window.__sessionRequestController.signal
+      });
+      if(!res.ok) throw new Error(`Session ${res.status}`);
       const d = await res.json();
+      const esc = window.escapeHtml;
 
       const alt = d.altitude ? `${d.altitude.toLocaleString()} ft` : '-';
       const spd = d.ground_speed ? `${d.ground_speed} kts` : '-';
@@ -44,18 +50,18 @@ function enhanceSessionModal(){
       <div class="session-hero">
         <div class="session-identity" style="grid-column:1/-1;">
           <div class="event-kicker">Pilot Session Card</div>
-          <div class="session-callsign">${d.callsign}</div>
+          <div class="session-callsign">${esc(d.callsign)}</div>
 
           <div class="subline" style="margin-top:10px;">
-            <span class="aircraft-chip">${d.aircraft || '-'}</span>
-            <span class="vid-chip">VID ${d.user_id}</span>
-            <span class="time-chip">${d.state || 'ONLINE'}</span>
+            <span class="aircraft-chip">${esc(d.aircraft || '-')}</span>
+            <span class="vid-chip">VID ${esc(d.user_id)}</span>
+            <span class="time-chip">${esc(d.state || 'ONLINE')}</span>
           </div>
 
           <div class="session-route-big">
-            <span>${d.departure || '---'}</span>
+            <span>${esc(d.departure || '---')}</span>
             <span class="arrow">→</span>
-            <span>${d.arrival || '---'}</span>
+            <span>${esc(d.arrival || '---')}</span>
           </div>
 
           <div class="session-progress" title="Flight phase progress: ${progress}%">
@@ -67,22 +73,22 @@ function enhanceSessionModal(){
       <div class="session-data-grid">
         <div class="session-data-card">
           <small>Altitude</small>
-          <b>${alt}</b>
+          <b>${esc(alt)}</b>
         </div>
 
         <div class="session-data-card">
           <small>Ground Speed</small>
-          <b>${spd}</b>
+          <b>${esc(spd)}</b>
         </div>
 
         <div class="session-data-card">
           <small>Heading</small>
-          <b>${hdg}</b>
+          <b>${esc(hdg)}</b>
         </div>
 
         <div class="session-data-card">
           <small>Simulator</small>
-          <b>${d.simulator || '-'}</b>
+          <b>${esc(d.simulator || '-')}</b>
         </div>
       </div>
 
@@ -91,13 +97,13 @@ function enhanceSessionModal(){
           ${d.route ? `
           <div class="session-route">
             <small>Flight Plan Route</small>
-            <div class="route-text">${d.route}</div>
+            <div class="route-text">${esc(d.route)}</div>
           </div>` : ''}
 
           ${d.remarks ? `
           <div class="session-route">
             <small>Remarks</small>
-            <div class="route-text">${d.remarks}</div>
+            <div class="route-text">${esc(d.remarks)}</div>
           </div>` : ''}
         </div>
 
@@ -107,38 +113,39 @@ function enhanceSessionModal(){
           <div class="session-status-list">
             <div class="session-status-row">
               <span>Pilot</span>
-              <span>${d.name || 'Unknown'}</span>
+              <span>${esc(d.name || 'Unknown')}</span>
             </div>
 
             <div class="session-status-row">
               <span>Division</span>
-              <span>${d.division || '-'}</span>
+              <span>${esc(d.division || '-')}</span>
             </div>
 
             <div class="session-status-row">
               <span>Rating</span>
-              <span>${d.pilot_rating || '-'}</span>
+              <span>${esc(d.pilot_rating || '-')}</span>
             </div>
 
             <div class="session-status-row">
               <span>Planned FL</span>
-              <span>${d.cruise_altitude || '-'}</span>
+              <span>${esc(d.cruise_altitude || '-')}</span>
             </div>
 
             <div class="session-status-row">
               <span>Planned Speed</span>
-              <span>${d.cruise_speed || '-'}</span>
+              <span>${esc(d.cruise_speed || '-')}</span>
             </div>
 
             <div class="session-status-row">
               <span>Tracker</span>
-              <span><a href="https://tracker.ivao.aero/sessions/${d.session_id}" target="_blank" style="color:#7db4ff;text-decoration:none;">Open →</a></span>
+              <span><a href="https://tracker.ivao.aero/sessions/${encodeURIComponent(d.session_id)}" target="_blank" rel="noopener noreferrer" style="color:#7db4ff;text-decoration:none;">Open →</a></span>
             </div>
           </div>
         </div>
       </div>
       `;
     }catch(err){
+      if(err.name === 'AbortError') return;
       body.innerHTML = '<div class="msg">Failed to load session.</div>';
     }
   };

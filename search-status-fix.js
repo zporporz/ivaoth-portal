@@ -30,7 +30,7 @@ window.renderSearchStatus = function(f){
     if(state === 'climbing') return '<span class="badge cyan">CLIMBING</span>';
     if(state === 'en route') return '<span class="badge yellow">EN ROUTE</span>';
     if(state === 'approach') return '<span class="badge orange">APPROACH</span>';
-    if(state) return `<span class="badge cyan">${state.toUpperCase()}</span>`;
+    if(state) return `<span class="badge cyan">${window.escapeHtml(state.toUpperCase())}</span>`;
     return '<span class="badge cyan">ONLINE</span>';
   }
 

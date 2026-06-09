@@ -69,12 +69,12 @@ export default async function handler(req, res) {
       route:           fp?.route            || null,
       remarks:         fp?.remarks          || null,
       // Last Track
-      latitude:        track?.latitude    || null,
-      longitude:       track?.longitude   || null,
-      altitude:        track?.altitude    || null,
-      ground_speed:    track?.groundSpeed || null,
-      heading:         track?.heading     || null,
-      state:           track?.state       || null,
+      latitude:        track?.latitude    ?? null,
+      longitude:       track?.longitude   ?? null,
+      altitude:        track?.altitude    ?? null,
+      ground_speed:    track?.groundSpeed ?? null,
+      heading:         track?.heading     ?? null,
+      state:           track?.state       ?? null,
       on_ground:       track?.onGround    ?? null,
     })
   } catch (err) {
