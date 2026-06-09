@@ -216,6 +216,8 @@ ${rows.map(r => {
 ${sessionLink(r.session_id, r.callsign)}
 <div class="subline">
 <span class="aircraft-chip">${escapeHtml(r.aircraft_id || "-")}</span>
+${r.is_circuit ? '<span class="aircraft-chip">CIRCUIT</span>' : ''}
+${r.is_reconnect ? '<span class="aircraft-chip">RECONNECT</span>' : ''}
 <span class="vid-chip">VID ${escapeHtml(r.user_id)}</span>
 </div>
 </div>

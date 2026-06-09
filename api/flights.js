@@ -1,16 +1,69 @@
 const ICAO_PATTERN = /^[A-Z0-9]{4}$/
 const TERMINAL_STATES = new Set(['on blocks', 'landed'])
+const PRE_DEPARTURE_STATES = new Set(['boarding', 'ground', 'connected', 'preparing'])
+const ACTIVE_SESSION_CACHE_MS = 15000
+const RECONNECT_WINDOW_MS = 30 * 60 * 1000
 
-export function isFlightOnline(flight, from, to, now = new Date()) {
+let activeSessionCache = { expiresAt: 0, ids: null }
+
+export function rangeIncludesNow(from, to, now = new Date()) {
   const fromDate = new Date(from)
   const toDate = new Date(to)
-  const state = (flight.lastTrack?.state || '').trim().toLowerCase()
-  const completedAt = flight.completedAt ? new Date(flight.completedAt) : null
 
   if (Number.isNaN(fromDate.getTime()) || Number.isNaN(toDate.getTime())) return false
-  if (now < fromDate || now > toDate) return false
-  if (completedAt && !Number.isNaN(completedAt.getTime()) && completedAt <= now) return false
-  return !TERMINAL_STATES.has(state)
+  return now >= fromDate && now <= toDate
+}
+
+export function classifyFlight(flight, activeSessionIds = null) {
+  const state = (flight.lastTrack?.state || '').trim().toLowerCase()
+  const sessionId = String(flight.id)
+
+  if (TERMINAL_STATES.has(state)) return 'landed'
+  if (!(activeSessionIds instanceof Set)) return 'unknown'
+  if (activeSessionIds.has(sessionId)) return 'online'
+  if (PRE_DEPARTURE_STATES.has(state)) return 'no_departure'
+  if (state) return 'disconnected'
+  return 'offline'
+}
+
+async function getActivePilotSessionIds(headers) {
+  if (activeSessionCache.ids && Date.now() < activeSessionCache.expiresAt) {
+    return activeSessionCache.ids
+  }
+
+  const response = await fetch('https://api.ivao.aero/v2/tracker/whazzup', { headers })
+  if (!response.ok) throw new Error(`Whazzup ${response.status}`)
+
+  const data = await response.json()
+  const pilots = Array.isArray(data.clients?.pilots) ? data.clients.pilots : []
+  const ids = new Set(pilots.map(pilot => String(pilot.id)))
+  activeSessionCache = { expiresAt: Date.now() + ACTIVE_SESSION_CACHE_MS, ids }
+  return ids
+}
+
+export function annotateReconnects(rows) {
+  const lastSessionByFlight = new Map()
+  const chronologicalRows = [...rows].sort(
+    (a, b) => new Date(a.connected_at) - new Date(b.connected_at)
+  )
+
+  for (const row of chronologicalRows) {
+    const key = [
+      row.user_id,
+      String(row.callsign || '').toUpperCase(),
+      String(row.departure || '').toUpperCase(),
+      String(row.arrival || '').toUpperCase()
+    ].join('|')
+    const connectedAt = new Date(row.connected_at).getTime()
+    const previousAt = lastSessionByFlight.get(key)
+
+    row.is_reconnect = Number.isFinite(connectedAt)
+      && Number.isFinite(previousAt)
+      && connectedAt - previousAt <= RECONNECT_WINDOW_MS
+    if (Number.isFinite(connectedAt)) lastSessionByFlight.set(key, connectedAt)
+  }
+
+  return rows
 }
 
 function parseIcaos(value) {
@@ -52,14 +105,21 @@ export default async function handler(req, res) {
       return res.status(400).json({ error: 'Invalid airport ICAO list' })
     }
 
-    const results = await Promise.all(
-      icaoList.map(icao =>
+    const headers = { 'apiKey': process.env.IVAO_API_KEY }
+    const trafficRequests = icaoList.map(icao =>
         fetch(
           `https://api.ivao.aero/v2/airports/${icao}/traffics?from=${encodeURIComponent(from)}&to=${encodeURIComponent(to)}`,
-          { headers: { 'apiKey': process.env.IVAO_API_KEY } }
+          { headers }
         ).then(r => r.ok ? r.json() : {}).catch(() => ({}))
-      )
     )
+    const activeSessionsRequest = rangeIncludesNow(from, to)
+      ? getActivePilotSessionIds(headers).catch(() => null)
+      : Promise.resolve(new Set())
+
+    const [results, activeSessionIds] = await Promise.all([
+      Promise.all(trafficRequests),
+      activeSessionsRequest
+    ])
 
     const seen = new Set()
     const rows = []
@@ -100,7 +160,7 @@ export default async function handler(req, res) {
 
         const fp = flight.flightPlan || {}
         const state = (flight.lastTrack?.state || '').trim()
-        const status = isFlightOnline(flight, from, to) ? 'online' : 'offline'
+        const status = classifyFlight(flight, activeSessionIds)
 
         // Duration from `time` field (seconds)
         const durationSec = flight.time ?? null
@@ -118,12 +178,14 @@ export default async function handler(req, res) {
           landed_at: TERMINAL_STATES.has(state.toLowerCase()) ? true : null,
           status,
           last_state: state,
+          is_circuit: Boolean(fp.departureId && fp.departureId === fp.arrivalId),
           duration_sec: durationSec,
           direction: dir
         })
       }
     }
 
+    annotateReconnects(rows)
     rows.sort((a, b) => new Date(b.connected_at) - new Date(a.connected_at))
 
     res.json(rows)
