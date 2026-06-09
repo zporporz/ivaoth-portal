@@ -31,10 +31,8 @@ window.renderSearchStatus = function(f){
 };
 
 window.applyFilter = function(){
-  const hide = document.getElementById('hideMissing')?.checked;
-  const filtered = hide ? latestData.filter(r => !isSearchFlightMissing(r)) : latestData;
-
-  document.getElementById('statFlights').innerText = filtered.length;
+  const filtered = window.getFilteredSearchData();
+  updateSearchStats(filtered, latestDepFilter, latestArrFilter);
   renderSearch(filtered);
 };
 

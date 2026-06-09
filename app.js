@@ -5,6 +5,8 @@
 const API = "";
 
 let latestData = [];
+let latestDepFilter = null;
+let latestArrFilter = null;
 let searchController = null;
 let sessionController = null;
 
@@ -120,10 +122,9 @@ async function searchFlights() {
     if (!Array.isArray(data)) throw new Error("Invalid search response");
 
     latestData = (data || []).map(r => ({ ...r, search_to: to }));
-    const depVal = document.getElementById("modeSwitch").checked ? null : document.getElementById("dep").value.trim().toUpperCase();
-    const arrVal = document.getElementById("modeSwitch").checked ? null : document.getElementById("arr").value.trim().toUpperCase();
-    updateSearchStats(latestData, depVal, arrVal);
-    renderSearch(latestData);
+    latestDepFilter = document.getElementById("modeSwitch").checked ? null : document.getElementById("dep").value.trim().toUpperCase();
+    latestArrFilter = document.getElementById("modeSwitch").checked ? null : document.getElementById("arr").value.trim().toUpperCase();
+    applyFilter();
 
   } catch (err) {
     if (err.name === "AbortError") return;
@@ -168,19 +169,26 @@ function getMostCommon(arr) {
    RENDER SEARCH
 ================================= */
 function applyFilter() {
-  const hide = document.getElementById("hideMissing")?.checked;
-  const filtered = hide
-    ? latestData.filter(r => {
-        const state = (r.last_state || "").trim().toLowerCase();
-        const nearArrival = r.arrival_distance !== null && r.arrival_distance < 3;
-        const isMissing = state && state !== "on blocks" && state !== "landed" && !nearArrival;
-        return !isMissing;
-      })
-    : latestData;
-  // update flight count only (not unique pilots/dep/arr)
-  document.getElementById("statFlights").innerText = filtered.length;
+  const filtered = getFilteredSearchData();
+  updateSearchStats(filtered, latestDepFilter, latestArrFilter);
   renderSearch(filtered);
 }
+
+function isCompletedFlight(flight) {
+  const state = (flight.last_state || "").trim().toLowerCase();
+  return flight.status === "landed"
+    || Boolean(flight.landed_at)
+    || state === "on blocks"
+    || state === "landed";
+}
+
+function getFilteredSearchData() {
+  const completedOnly = document.getElementById("completedOnly")?.checked;
+  return completedOnly ? latestData.filter(isCompletedFlight) : latestData;
+}
+
+window.isCompletedFlight = isCompletedFlight;
+window.getFilteredSearchData = getFilteredSearchData;
 
 function renderSearch(rows) {
   const wrap = document.getElementById("results");
@@ -516,14 +524,15 @@ function scrollToTop() {
    EXPORT CSV
 ================================= */
 function exportCSV() {
-  if (!latestData || !latestData.length) {
+  const exportData = getFilteredSearchData();
+  if (!exportData.length) {
     alert("No search results to export.");
     return;
   }
 
   const rows = [["Callsign","VID","Aircraft","Departure","Arrival","Connected","Status"]];
 
-  latestData.forEach(f => {
+  exportData.forEach(f => {
     rows.push([
       f.callsign || "", f.user_id || "", f.aircraft_id || "",
       f.departure || "", f.arrival || "", f.connected_at || "",
