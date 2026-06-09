@@ -112,9 +112,9 @@ export default async function handler(req, res) {
           { headers }
         ).then(r => r.ok ? r.json() : {}).catch(() => ({}))
     )
-    const activeSessionsRequest = rangeIncludesNow(from, to)
-      ? getActivePilotSessionIds(headers).catch(() => null)
-      : Promise.resolve(new Set())
+    // Presence is independent from the search cutoff. A session returned by a
+    // range ending a few minutes ago may still be connected right now.
+    const activeSessionsRequest = getActivePilotSessionIds(headers).catch(() => null)
 
     const [results, activeSessionIds] = await Promise.all([
       Promise.all(trafficRequests),

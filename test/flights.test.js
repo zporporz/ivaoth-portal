@@ -17,6 +17,14 @@ test('only a session present in whazzup is online', () => {
   assert.equal(classifyFlight(flight, new Set()), 'disconnected')
 })
 
+test('live presence stays authoritative after the search cutoff', () => {
+  const historicalTo = new Date('2026-06-09T10:00:00Z')
+  assert.equal(historicalTo < now, true)
+
+  const flight = { id: 371, lastTrack: { state: 'En Route' } }
+  assert.equal(classifyFlight(flight, new Set(['371'])), 'online')
+})
+
 test('terminal flight states are landed even when absent from whazzup', () => {
   const flight = { id: 123, lastTrack: { state: 'On Blocks' } }
   assert.equal(classifyFlight(flight, new Set()), 'landed')
