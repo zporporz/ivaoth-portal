@@ -165,6 +165,12 @@ input:focus{
 border-color:#2f7cff;
 }
 
+input.input-error,
+input.input-error:focus{
+border-color:#ff5f70;
+box-shadow:0 0 0 2px rgba(255,95,112,.12);
+}
+
 .hint{
 display:block;
 margin-top:8px;

@@ -74,7 +74,8 @@
           </div>
           <div>
             <label>From Time</label>
-            <input id="fromTime" type="text" placeholder="HH:MM">
+            <input id="fromTime" type="text" class="utc-time-input" placeholder="HH:MM"
+              inputmode="numeric" maxlength="5" autocomplete="off" aria-label="From time UTC">
             <small class="hint">UTC time</small>
           </div>
           <div>
@@ -84,7 +85,8 @@
           </div>
           <div>
             <label>To Time</label>
-            <input id="toTime" type="text" placeholder="HH:MM">
+            <input id="toTime" type="text" class="utc-time-input" placeholder="HH:MM"
+              inputmode="numeric" maxlength="5" autocomplete="off" aria-label="To time UTC">
             <small class="hint">UTC time</small>
           </div>
         </div>
@@ -208,6 +210,7 @@
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="time-input.js"></script>
 <script src="app.js"></script>
 <script src="search-status-fix.js"></script>
 <script src="portal-upgrades.js"></script>
