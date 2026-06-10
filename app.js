@@ -61,7 +61,11 @@ function resetForm() {
   ["airportCodes","dep","arr","fromDate","fromTime","toDate","toTime"]
     .forEach(id => {
       const el = document.getElementById(id);
-      if (el) el.value = "";
+      if (el) {
+        el.value = "";
+        el.classList.remove("input-error");
+        el.setAttribute("aria-invalid", "false");
+      }
     });
 
   latestData = [];
@@ -89,6 +93,16 @@ async function searchFlights() {
 
   if (!fromDate || !fromTime || !toDate || !toTime) {
     results.innerHTML = '<div class="msg">Complete date/time first.</div>';
+    return;
+  }
+  if (!window.isValidUtcTime(fromTime) || !window.isValidUtcTime(toTime)) {
+    results.innerHTML = '<div class="msg">Enter UTC time as HH:MM (00:00-23:59).</div>';
+    const invalidInput = !window.isValidUtcTime(fromTime)
+      ? document.getElementById("fromTime")
+      : document.getElementById("toTime");
+    invalidInput.classList.add("input-error");
+    invalidInput.setAttribute("aria-invalid", "true");
+    invalidInput.focus();
     return;
   }
 
