@@ -123,10 +123,33 @@
         <div class="panel">
           <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;margin-bottom:16px;">
             <h3>Flight Search Results</h3>
-            <label class="option-item" style="font-size:13px;cursor:pointer;">
-              <input type="checkbox" id="completedOnly" onchange="applyFilter()">
-              Completed flights only
-            </label>
+            <div class="result-tools">
+              <div class="data-quality-help">
+                <button id="dataQualityButton" class="quality-help-button" type="button"
+                  aria-expanded="false" aria-controls="dataQualityPopover"
+                  onclick="toggleDataQualityPopover()">
+                  <span aria-hidden="true">?</span> Data quality
+                </button>
+                <div id="dataQualityPopover" class="quality-popover" role="dialog"
+                  aria-label="Flight status definitions" hidden>
+                  <strong>Flight status definitions</strong>
+                  <dl>
+                    <div><dt>ON BLOCKS</dt><dd>Arrived and reached the parking stand.</dd></div>
+                    <div><dt>LANDED</dt><dd>Touched down; may still be taxiing.</dd></div>
+                    <div><dt>DISCONNECTED</dt><dd>Disconnected after starting, before completion.</dd></div>
+                    <div><dt>NO DEPARTURE</dt><dd>Disconnected while still on the ground.</dd></div>
+                    <div><dt>OFFLINE</dt><dd>Ended without enough state to classify.</dd></div>
+                    <div><dt>UNKNOWN</dt><dd>IVAO live presence could not be verified.</dd></div>
+                    <div><dt>CIRCUIT</dt><dd>Departure and arrival are the same airport.</dd></div>
+                    <div><dt>RECONNECT</dt><dd>Matching session reconnected within 30 minutes.</dd></div>
+                  </dl>
+                </div>
+              </div>
+              <label class="option-item result-filter">
+                <input type="checkbox" id="completedOnly" onchange="applyFilter()">
+                Completed flights only
+              </label>
+            </div>
           </div>
           <div id="results"></div>
         </div>
@@ -212,6 +235,7 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="time-input.js"></script>
 <script src="app.js"></script>
+<script src="data-quality.js"></script>
 <script src="search-status-fix.js"></script>
 <script src="portal-upgrades.js"></script>
 <script src="atc-session-fix.js"></script>

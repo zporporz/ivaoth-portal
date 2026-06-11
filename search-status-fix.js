@@ -11,23 +11,23 @@ window.renderSearchStatus = function(f){
   const state = (f.last_state || '').trim().toLowerCase();
 
   if(f.status === 'landed' || state === 'on blocks' || state === 'landed'){
-    return `<span class="badge green">${state === 'on blocks' ? 'ON BLOCKS' : 'LANDED'}</span>`;
+    return renderQualityBadge(state === 'on blocks' ? 'ON BLOCKS' : 'LANDED', 'green');
   }
 
   if(f.status === 'online'){
-    if(state === 'ground') return '<span class="badge blue">GROUND</span>';
-    if(state === 'departing') return '<span class="badge blue">DEPARTING</span>';
-    if(state === 'climbing') return '<span class="badge cyan">CLIMBING</span>';
-    if(state === 'en route') return '<span class="badge yellow">EN ROUTE</span>';
-    if(state === 'approach') return '<span class="badge orange">APPROACH</span>';
-    if(state) return `<span class="badge cyan">${window.escapeHtml(state.toUpperCase())}</span>`;
-    return '<span class="badge cyan">ONLINE</span>';
+    if(state === 'ground') return renderQualityBadge('GROUND', 'blue');
+    if(state === 'departing') return renderQualityBadge('DEPARTING', 'blue');
+    if(state === 'climbing') return renderQualityBadge('CLIMBING', 'cyan');
+    if(state === 'en route') return renderQualityBadge('EN ROUTE', 'yellow');
+    if(state === 'approach') return renderQualityBadge('APPROACH', 'orange');
+    if(state) return renderQualityBadge(state.toUpperCase(), 'cyan');
+    return renderQualityBadge('ONLINE', 'cyan');
   }
 
-  if(f.status === 'no_departure') return '<span class="badge orange">NO DEPARTURE</span>';
-  if(isSearchFlightMissing(f)) return '<span class="badge red">DISCONNECTED</span>';
-  if(f.status === 'unknown') return '<span class="badge orange">UNKNOWN</span>';
-  return '<span class="badge red">OFFLINE</span>';
+  if(f.status === 'no_departure') return renderQualityBadge('NO DEPARTURE', 'orange');
+  if(isSearchFlightMissing(f)) return renderQualityBadge('DISCONNECTED', 'red');
+  if(f.status === 'unknown') return renderQualityBadge('UNKNOWN', 'orange');
+  return renderQualityBadge('OFFLINE', 'red');
 };
 
 window.applyFilter = function(){

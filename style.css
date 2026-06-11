@@ -507,6 +507,145 @@ background:#4b2d0f;
 color:#ffbe5c;
 }
 
+.result-tools{
+display:flex;
+align-items:center;
+gap:12px;
+flex-wrap:wrap;
+}
+
+.result-filter{
+font-size:13px;
+cursor:pointer;
+margin:0;
+}
+
+.data-quality-help{
+position:relative;
+}
+
+.quality-help-button{
+display:flex;
+align-items:center;
+gap:7px;
+padding:8px 11px;
+border:1px solid #29466d;
+border-radius:999px;
+background:#0a1a2e;
+color:#9fc2f5;
+font-size:12px;
+font-weight:700;
+cursor:pointer;
+}
+
+.quality-help-button span{
+display:grid;
+place-items:center;
+width:18px;
+height:18px;
+border-radius:50%;
+background:#19477b;
+color:#fff;
+}
+
+.quality-popover{
+position:absolute;
+z-index:30;
+top:calc(100% + 10px);
+right:0;
+width:min(390px,calc(100vw - 40px));
+padding:16px;
+border:1px solid #29466d;
+border-radius:16px;
+background:#0a182a;
+box-shadow:0 18px 50px rgba(0,0,0,.38);
+color:#dceaff;
+}
+
+.quality-popover[hidden]{
+display:none;
+}
+
+.quality-popover strong{
+display:block;
+margin-bottom:10px;
+}
+
+.quality-popover dl{
+display:grid;
+gap:8px;
+margin:0;
+}
+
+.quality-popover dl div{
+display:grid;
+grid-template-columns:110px 1fr;
+gap:10px;
+padding-top:8px;
+border-top:1px solid rgba(255,255,255,.07);
+}
+
+.quality-popover dt{
+font-size:11px;
+font-weight:800;
+color:#78afff;
+}
+
+.quality-popover dd{
+margin:0;
+font-size:12px;
+line-height:1.45;
+color:#a9bddb;
+}
+
+.quality-badge{
+position:relative;
+cursor:help;
+}
+
+.quality-badge::after{
+content:attr(data-tooltip);
+position:absolute;
+z-index:25;
+left:50%;
+bottom:calc(100% + 10px);
+width:240px;
+padding:10px 12px;
+border:1px solid #29466d;
+border-radius:12px;
+background:#071426;
+color:#dceaff;
+font-size:11px;
+font-weight:500;
+line-height:1.4;
+letter-spacing:0;
+text-align:left;
+text-transform:none;
+box-shadow:0 12px 30px rgba(0,0,0,.35);
+opacity:0;
+pointer-events:none;
+transform:translate(-50%,5px);
+transition:.16s ease;
+}
+
+.quality-badge:hover::after,
+.quality-badge:focus-visible::after{
+opacity:1;
+transform:translate(-50%,0);
+}
+
+@media(max-width:700px){
+.quality-popover{
+right:auto;
+left:0;
+}
+
+.quality-popover dl div{
+grid-template-columns:1fr;
+gap:3px;
+}
+}
+
 /* ===============================
 RANK ROW
 =============================== */
