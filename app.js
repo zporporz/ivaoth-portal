@@ -238,8 +238,8 @@ ${rows.map(r => {
 ${sessionLink(r.session_id, r.callsign)}
 <div class="subline">
 <span class="aircraft-chip">${escapeHtml(r.aircraft_id || "-")}</span>
-${r.is_circuit ? '<span class="aircraft-chip">CIRCUIT</span>' : ''}
-${r.is_reconnect ? '<span class="aircraft-chip">RECONNECT</span>' : ''}
+${r.is_circuit ? '<span class="aircraft-chip quality-badge" tabindex="0" aria-label="CIRCUIT: Departure and arrival airports are the same." data-tooltip="Departure and arrival airports are the same.">CIRCUIT</span>' : ''}
+${r.is_reconnect ? '<span class="aircraft-chip quality-badge" tabindex="0" aria-label="RECONNECT: Matching session reconnected within 30 minutes." data-tooltip="Matching session reconnected within 30 minutes.">RECONNECT</span>' : ''}
 <span class="vid-chip">VID ${escapeHtml(r.user_id)}</span>
 </div>
 </div>
